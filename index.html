@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panel Informativo Logística · NEXOCORP</title>
+<link rel="icon" href="icon.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Barlow:wght@300;400;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{--p:#5046E5;--p2:#3F4FA8;--d:#1B2154;--bg:#F2F3FA;--t:#1d2040;--m:#6b7099;--ok:#1f9d6b;--w:#f0b429}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;font:16px/1.5 Outfit,system-ui,sans-serif;background:var(--bg);color:var(--t)}
+header{background:linear-gradient(110deg,var(--d),var(--p2) 70%,var(--p));color:#fff;display:flex;align-items:center;gap:14px;padding:14px 24px}
+header img{width:46px;height:46px;border-radius:12px}header h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.02em}
+header small{display:block;font-weight:300;opacity:.8}header .r{margin-left:auto;display:flex;gap:8px;align-items:center}
+main{max-width:1100px;margin:24px auto;padding:0 16px}
+h2,h3{margin:.3em 0 .6em}.mut{color:var(--m)}
+.card{background:#fff;border-radius:14px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(27,33,84,.12)}
+input,select,textarea{width:100%;padding:10px 12px;margin:4px 0 10px;border:1.5px solid #d5d8ee;border-radius:9px;font:inherit;background:#fff}
+input:focus,select:focus{outline:3px solid #5046e540;border-color:var(--p)}
+input.lk{background:#eceefb;color:var(--p2);font-weight:600}
+button{background:var(--p);color:#fff;border:0;border-radius:9px;padding:10px 18px;font:600 15px Outfit,sans-serif;cursor:pointer}
+button:hover{background:var(--p2)}button:disabled{opacity:.5;cursor:default}button.ghost{background:#e6e8f8;color:var(--p2)}button.x{background:none;color:#c0392b;padding:4px 8px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row select{width:auto}
+.tag{background:#e6e8f8;color:var(--p2);border-radius:20px;padding:2px 12px;font-size:13px;font-weight:600}
+.tag.st{background:#fff3cd;color:#8a6100}.tag.st.ok{background:#e3f6ee;color:var(--ok)}
+.note{background:#fff7e0;border-left:4px solid var(--w);padding:10px 14px;border-radius:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.chip{background:#fff;border:1.5px solid #d5d8ee;border-radius:9px;padding:6px 12px;font-weight:600;cursor:pointer}
+.chip input{width:auto;margin:0 6px 0 0}.chip.ok{background:#e3f6ee;border-color:var(--ok);color:var(--ok)}.chip.vis{background:#fff3cd;border-color:var(--w);color:#8a6100}.chip a{cursor:pointer}
+.wel{background:linear-gradient(110deg,var(--d),var(--p2) 70%,var(--p));color:#fff;border-radius:16px;padding:22px 26px;margin-bottom:16px}.wel h2{margin:0;font-size:26px}.wel p{margin:4px 0 0;opacity:.85}
+/* ===== Intro 3D ===== */
+.hz{min-height:100vh;position:relative;overflow:hidden;color:#fff;font-family:Barlow,Outfit,sans-serif;background:radial-gradient(1100px 700px at 78% 42%,#3b3fd8 0%,#1d2166 42%,#0c0f36 100%)}
+.hz:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(circle at 70% 50%,#000,transparent 70%);mask-image:radial-gradient(circle at 70% 50%,#000,transparent 70%)}
+.hz-in{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:20px;max-width:1300px;margin:auto;padding:28px 40px 56px;min-height:100vh;align-items:center}
+.hz-brand{display:flex;align-items:center;gap:16px;letter-spacing:.55em;font-weight:300;font-size:20px}.hz-brand img{width:54px;height:54px;border-radius:14px;box-shadow:0 8px 24px #0006}
+.hz h1{font:700 clamp(46px,6.4vw,88px)/.95 'Barlow Condensed',sans-serif;margin:22px 0 14px}
+.hz p.sub{font-size:19px;color:#c9ccf5;max-width:520px;margin:0 0 22px;font-weight:300}
+.hz-st{display:flex;gap:24px;margin:0 0 24px;flex-wrap:wrap}.hz-st div{border-left:3px solid #6c63ff;padding-left:14px}.hz-st b{display:block;font:700 40px/1 'Barlow Condensed',sans-serif}.hz-st span{color:#b9bdf0;font-size:15px}
+.hz-login{max-width:420px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:16px;padding:18px 20px;box-shadow:0 14px 40px #0005}
+.hz-login h3{margin:0 0 8px;font-weight:600}.hz-login input,.hz-login select{background:#fff;color:var(--t)}.hz-login button{background:#fff;color:var(--p2);width:100%}.hz-login button:hover{background:#e6e8ff}.hz-login .mut{color:#b9bdf0;font-size:14px;margin:8px 0 0}
+.hz-foot{position:absolute;bottom:16px;left:40px;color:#8f94d9;font-size:13px}
+.sc{position:relative;height:560px;perspective:1100px}.sc-in{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .18s ease-out}
+.tile{position:absolute;left:50%;top:50%;width:270px;height:270px;margin:-135px 0 0 -135px;transform-style:preserve-3d;transform:translateZ(60px);animation:fl 6s ease-in-out infinite,spin 12s linear infinite}
+.face{position:absolute;inset:0;border-radius:60px;background:linear-gradient(145deg,#8f8cff,#4b45e0 55%,#3a35c4);box-shadow:0 40px 80px #0008,inset 0 2px 0 #fff5;display:grid;place-items:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(7px)}
+.face.b{transform:rotateY(180deg) translateZ(7px)}
+.face img{width:64%;border-radius:32px;filter:drop-shadow(0 8px 14px #0006)}
+@keyframes spin{to{transform:translateZ(60px) rotateY(360deg)}}
+/* ===== Portal de bodegas: mismos tonos de la intro, solicitudes resaltadas ===== */
+.pt{min-height:100vh;background:radial-gradient(1100px 700px at 78% 0%,#3b3fd8 0%,#1d2166 45%,#0c0f36 100%)}
+.pt main{color:#fff}.pt .card,.pt .tw{color:var(--t)}.pt .mut{color:#b9bdf0}.pt .card .mut{color:var(--m)}
+.pt .wel{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.pt .card{border-left:7px solid var(--p);box-shadow:0 12px 32px #0007,0 0 0 1px rgba(255,255,255,.35)}
+.pt .card h3{font-size:20px}.pt .card.pend{border-left-color:var(--w)}.pt .card.ok{border-left-color:var(--ok)}.pt .card.cl{border-left-color:#e04b3c}
+.orb{position:absolute;left:50%;top:50%;border:1px dashed rgba(255,255,255,.28);border-radius:50%}
+.o1{width:440px;height:520px;margin:-260px 0 0 -220px;transform:rotateY(18deg) rotateZ(8deg)}
+.o2{width:400px;height:500px;margin:-250px 0 0 -200px;border:1px solid rgba(160,170,255,.35);transform:rotateX(68deg) rotateZ(-20deg)}
+.fc{position:absolute;min-width:172px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:14px;padding:12px 16px;box-shadow:0 14px 30px #0005;animation:fl 7s ease-in-out infinite}
+.fc b{display:block;font:700 21px 'Barlow Condensed',sans-serif;letter-spacing:.03em}.fc span{font-size:13px;color:#c9ccf5}.fc i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+@keyframes fl{0%,100%{translate:0 0}50%{translate:0 -14px}}
+@media(max-width:900px){.hz-in{grid-template-columns:1fr;padding:22px 20px 60px}.sc{display:none}.hz-foot{left:20px}}
+@media(prefers-reduced-motion:reduce){.hz *{animation:none!important;transition:none!important}}
+/* ===== Admin: menú lateral y gráficas ===== */
+.ad{display:grid;grid-template-columns:250px 1fr;min-height:100vh;background:var(--bg)}
+.sd{background:linear-gradient(170deg,#7a1f8c 0%,#3a2a9c 45%,#1b2154 100%);color:#fff;padding:22px 16px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;height:100vh}
+.sd-logo{display:flex;align-items:center;gap:10px;letter-spacing:.3em}.sd-logo img{width:38px;height:38px;border-radius:10px}.sd-logo b{font-weight:600;font-size:15px}
+.sd-user{text-align:center;margin:6px 0 4px}.av{width:72px;height:72px;border-radius:50%;background:#fff;color:var(--p2);font:700 24px Outfit,sans-serif;display:grid;place-items:center;margin:0 auto 8px;box-shadow:0 6px 18px #0004}
+.sd-user span{display:block;font-weight:600;font-size:13px;word-break:break-all}.sd-user small{opacity:.75}
+.sd nav{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.nv{display:flex;align-items:center;gap:12px;width:100%;background:none;color:#fff;text-align:left;padding:11px 14px;border-radius:12px;font:500 15px Outfit,sans-serif}
+.nv span{width:22px;text-align:center}.nv:hover{background:rgba(255,255,255,.14)}.nv.on{background:rgba(255,255,255,.24);box-shadow:inset 3px 0 0 #fff;font-weight:700}.nv.out{margin-top:auto;background:rgba(255,255,255,.08)}
+.ad-main{padding:26px 30px;min-width:0}
+.rg{text-align:center}.rr{width:96px;height:96px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),#e6e8f8 0)}
+.rr:before{content:"";grid-area:1/1;width:72px;height:72px;border-radius:50%;background:#fff}.rr b{grid-area:1/1;font:700 21px Outfit,sans-serif;z-index:1}
+.rg span{display:block;font-weight:600;font-size:14px}.rg small{color:var(--m);font-size:12px}
+.sol-g{display:grid;grid-template-columns:minmax(300px,370px) 1fr;gap:24px;margin-top:14px;align-items:center}.rgs{display:flex;gap:12px;justify-content:space-around}
+.lg{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+details summary{cursor:pointer;font-weight:600;color:var(--p2);margin-top:12px}
+@media(max-width:860px){.ad{grid-template-columns:1fr}.sd{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:10px}.sd-user,.sd-logo b{display:none}.sd nav{flex-direction:row;overflow-x:auto;flex:1;margin:0}.nv{width:auto;white-space:nowrap;padding:9px 12px}.nv.out{margin:0}.ad-main{padding:16px 12px}.sol-g{grid-template-columns:1fr}}
+.sw{display:flex;gap:8px;align-items:center;font-weight:600;margin:6px 0 10px}.sw input{width:auto;margin:0}
+.sb{display:flex;height:12px;background:#e6e8f8;border-radius:6px;overflow:hidden;min-width:140px}.sb i{display:block;height:100%}.sb .p{background:var(--ok)}.sb .v{background:var(--w)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0 14px}
+.kpi{background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(27,33,84,.12)}.kpi b{display:block;font-size:30px;line-height:1.1}.kpi span{color:var(--m);font-size:13px}
+.tw{overflow-x:auto;background:#fff;border-radius:12px;margin:10px 0}table{border-collapse:collapse;width:100%;min-width:900px}
+th{background:var(--d);color:#fff;font-size:13px;padding:10px;text-align:left}td{padding:3px 4px;border-bottom:1px solid #eceefb}td input{margin:0}
+tr.cl{cursor:pointer}tr.cl:hover td{background:#f6f7fd}
+table.dr{min-width:0;border-collapse:separate;border-spacing:0 3px;margin:8px 0 12px}
+.dr th{background:var(--p2);width:200px;font-size:12px;padding:10px 12px;vertical-align:middle}
+.dr td{background:#fff;padding:10px 14px;font-weight:600;border:1.5px solid #d5d8ee}
+.dr tr.y td{background:#FFEB3B;font-size:19px;font-weight:700;border-color:#e6d200}.dr td.big{text-align:center;font-size:19px;font-weight:700}.dr tr.g th{background:#157a53}.dr tr.g td{background:#1f9d6b;color:#fff;border-color:#157a53;font-size:19px;font-weight:700;text-align:center}
+@media(max-width:640px){.g2{grid-template-columns:1fr}.dr th{width:110px}}
+</style></head><body><div id="app"></div>
+<script>
+const SB_URL='https://fzztrlhuixkfwixsdwcc.supabase.co',SB_KEY='sb_publishable_sCHdAi4NeF0o44N0QeFX6A_hpQC3Tz0';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+const BOD=[301,302,303,304,306,307,308,309,311,312,314,315,316,318,319,320,321,322,323,324,325,328,329,330,331,332,333,334,335,336,337,338,339,501,502,503,504,505,801,802,803].map(n=>'B'+n);
+const COL=['bodega','codigo','descripcion','unidad','cantidad','fecha_vencimiento','lote','proveedor'];
+const $=s=>document.querySelector(s),app=$('#app');
+const e=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const head=(sub,r='')=>`<header><img src="icon.jpg" alt="NEXOCORP"><h1>PANEL INFORMATIVO LOGÍSTICA<small>${sub}</small></h1><div class="r">${r}</div></header>`;
+const fh=d=>new Date(d).toLocaleString('es-BO',{dateStyle:'short',timeStyle:'short'});
+const st=(x,i)=>x.procesado_at?(i?'✅ Procesado':'✅ Enviado'):x.visto_at?'👁 Abierto, sin enviar':'⏳ Pendiente';
+const mk=v=>document.querySelectorAll('.chips input:not(:disabled)').forEach(i=>i.checked=!!v);
+function dl(n,rows){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(';')).join('\n')],{type:'text/csv'}));a.download=n;a.click()}
+function init(){location.hash=='#admin'?admin():portal()}
+
+function hero(form,sub){return `<div class="hz"><div class="hz-in"><div><div class="hz-brand"><img src="icon.jpg" alt=""><span>NEXOCORP</span></div>
+<h1>Portal<br>Logística Inversa</h1><p class="sub">${sub}</p>
+<div class="hz-login">${form}</div></div>
+<div class="sc"><div class="sc-in"><div class="orb o1"></div><div class="orb o2"></div><div class="tile"><div class="face"><img src="icon.jpg" alt=""></div><div class="face b"><img src="icon.jpg" alt=""></div></div>
+</div></div></div>
+<div class="hz-foot">Nexocorp · Logística Inversa · Uso interno · Versión ${VER}</div></div>`}
+function tilt(){const sc=document.querySelector('.sc-in'),h=document.querySelector('.hz');if(!sc||!h)return;
+  h.onmousemove=ev=>{sc.style.transform=`rotateY(${(ev.clientX/innerWidth-.5)*18}deg) rotateX(${-(ev.clientY/innerHeight-.5)*14}deg)`};h.onmouseleave=()=>{sc.style.transform=''}}
+
+/* ================= PORTAL DE BODEGAS (con usuario y clave) ================= */
+let S=[],CUR;
+const TK=()=>sessionStorage.tk;
+async function rpc(f,a){const r=await sb.rpc(f,{p_token:TK(),...a});if(r.error&&/SESION_EXPIRADA/.test(r.error.message)){salir();r.error.message='Tu sesión venció. Ingresa de nuevo.'}return r}
+function salir(){sessionStorage.clear();portal()}
+async function ingresar(){const b=$('#lb').value,c=$('#lc').value;if(!b||!c)return alert('Elige tu bodega e ingresa la clave');
+  const{data,error}=await sb.rpc('login_bodega',{p_bod:b,p_clave:c});if(error||!data.ok)return alert(error?error.message:data.error);
+  sessionStorage.tk=data.token;sessionStorage.bod=data.bodega;portal()}
+async function portal(){
+  if(!TK()){app.innerHTML=hero(`<h3>Ingreso de bodega</h3><select id="lb"><option value="">Elige tu bodega</option>${BOD.map(b=>`<option>${b}</option>`).join('')}</select><input id="lc" type="password" placeholder="Clave de tu bodega" onkeydown="event.key=='Enter'&&ingresar()"><button onclick="ingresar()">Ingresar</button><p class="mut">Tu usuario y clave inicial es el código de tu bodega. Si no puedes entrar, pide al administrador que la restablezca.</p>`,'Solicitudes, seguimiento y recepción de información entre las bodegas y logística.');return tilt()}
+  app.innerHTML='<div class="pt">'+head('Portal Logística Inversa',`<span class="tag">${sessionStorage.bod}</span><button class="ghost" onclick="salir()">Salir</button>`)+'<main id="m"><p class="mut">Cargando…</p></main></div>';
+  const r=await rpc('bod_solicitudes',{});if(r.error)return $('#m').innerHTML='<div class="card">No se pudo cargar: '+e(r.error.message)+'</div>';
+  const k=s=>s.estado!='abierta'?2:s.procesado_at?1:0;S=r.data.sort((a,b)=>k(a)-k(b));const p=S.filter(s=>k(s)==0).length;
+  $('#m').innerHTML=`<div class="wel"><h2>👋 Bienvenido, Bodega ${sessionStorage.bod}</h2><p>Portal Logística Inversa · ${p?`Tienes ${p} solicitud(es) pendiente(s)`:'Estás al día 🎉'}${S.some(s=>s.estado!='abierta')?' · Las solicitudes cerradas se ocultan solas en 2 días':''}</p></div>`+(S.length?S.map(card).join(''):'<p class="mut">No hay solicitudes activas por ahora.</p>');
+}
+const fx=d=>d?new Date(d+'T00:00').toLocaleDateString('es-BO',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}).toUpperCase():'';
+const fc=d=>new Date(d+'T00:00').toLocaleDateString('es-BO',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}).toUpperCase();
+function recojo(s){const d=s.recojo_desde,h=s.recojo_hasta;if(!d)return'';return `<tr class="g"><th>📅 FECHA DE RECOJO:</th><td>${h&&h!=d?`DEL ${fc(d)} AL ${fc(h)}`:fx(d)}</td></tr>`}
+const hoyL=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const fd=d=>d?d.split('-').reverse().join('/'):'';
+function lotes(s){const a=Array.isArray(s.cond_lotes)?s.cond_lotes:[];return a.length?a:(s.cond_activa&&(s.cond_lote||s.cond_fecha)?[{lote:s.cond_lote,fecha:s.cond_fecha}]:[])}
+function lvRow(s){if(!(prods(s).length||s.cond_activa))return'';const L=lotes(s),t=L.length?L.map(x=>[x.lote&&'LOTE '+x.lote,x.fecha&&'VENCE '+fd(x.fecha)].filter(Boolean).join(' · ')):['TODO EL STOCK'];return `<tr><th>LOTE / VENCIMIENTO:</th><td class="big">${t.map(e).join('<br>')}</td></tr>`}
+function prods(s){const a=Array.isArray(s.productos)?s.productos:[];return a.length?a:((s.codigo||s.producto)?[{codigo:s.codigo,producto:s.producto}]:[])}
+function prRows(s){const P=prods(s);return P.length?`<tr class="y"><th>COD SKU / DESCRIPCIÓN:</th><td>${P.map(x=>e(x.codigo||'')+' &nbsp; '+e(x.producto||'')).join('<br>')}</td></tr>`:''}
+function datos(s){
+  const r=(k,v,c='')=>v?`<tr><th>${k}</th><td class="${c}">${e(v)}</td></tr>`:'';
+  
+  return `<table class="dr">${prRows(s)}
+  ${lvRow(s)}${r('PROVEEDOR:',s.proveedor)}${r('MOTIVO:',s.motivo)}${r('BODEGAS DESTINO:',s.destino)}${recojo(s)}${r('PLAZO PARA PROCESAR:',fx(s.plazo))}${r('RÓTULO:',s.rotulo)}</table>`;
+}
+function card(s){
+  const info=s.tipo=='informativa',ok=!!(s.procesado_at||(info&&s.visto_at)),cl=s.estado=='cerrada';
+  const acc=info?(ok?`<span class="mut">Procesado el ${fh(s.procesado_at||s.visto_at)}${s.respuesta?`<br>“${e(s.respuesta)}”`:''}</span>`:`<div style="flex:1;min-width:240px"><label class="mut">Escribe el detalle del procesamiento (quién lo procesó, observaciones…)</label><input id="rp_${s.id}" placeholder="Ej.: Procesado por Juan, 3 cajas apartadas"><button onclick="proc('${s.id}')">✅ OK, procesado</button></div>`)
+    :(ok?`<span class="mut">${s.sin_existencias?'Sin existencias':'Enviado'} el ${fh(s.procesado_at)}</span>`:`<button onclick="fill('${s.id}')">Llenar información</button>`);
+  return `<div class="card ${cl&&!ok?'cl':ok?'ok':'pend'}"><h3>${e(s.titulo)} <span class="tag">${info?'Solo información':'Requiere llenado'}</span> <span class="tag st ${ok?'ok':''}">${ok?'✅ '+(info?'Procesado':'Enviado'):cl?'🔒 Cerrada':s.visto_at?'👁 Visto':'Pendiente'}</span></h3>
+  ${s.descripcion?`<p class="mut">${e(s.descripcion)}</p>`:''}${datos(s)}${s.doc_url?`<p><a href="${e(s.doc_url)}" target="_blank">📎 Ver documento adjunto</a></p>`:''}<div class="row">${cl&&!ok?'<span class="mut">🔒 Cerrada: venció el plazo sin completarse</span>':acc}</div></div>`;
+}
+async function proc(id){const t=($('#rp_'+id).value||'').trim();if(!t)return alert('Escribe el campo antes de confirmar');
+  if(!confirm('¿Confirmas que esta información fue procesada? No podrás deshacerlo.'))return;
+  const r=await rpc('bod_procesar',{p_sol:id,p_texto:t});r.error?alert(r.error.message):portal()}
+async function mark(id,x){if(!confirm('¿Confirmas que ya viste esta información? Quedará registrado para el administrador.'))return;
+  const r=await rpc('bod_marcar',{p_sol:id,p_estado:x});r.error?alert(r.error.message):portal()}
+function fill(id){
+  const s=S.find(x=>x.id==id),b=sessionStorage.bod;CUR=s;rpc('bod_marcar',{p_sol:id,p_estado:'visto'});
+  $('#m').innerHTML=`<button class="ghost" onclick="portal()">← Volver</button><h2>${e(s.titulo)} <span class="tag">${b}</span></h2>
+  <div class="tw"><table><thead><tr>${['CÓDIGO','DESCRIPCIÓN','U. MEDIDA','CANTIDAD','F. VENCIMIENTO','LOTE','PROVEEDOR',''].map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody id="rows"></tbody></table></div>
+  <div class="row"><button class="ghost" onclick="addRow()">+ Agregar fila</button><button onclick="send('${id}')">Enviar información</button><button class="ghost" onclick="send('${id}',1)">Sin existencias</button></div>`;
+  prods(s).length?prods(s).forEach(x=>addRow(x)):addRow();
+}
+function selProd(el){const tr=el.closest('tr'),x=prods(CUR).find(y=>(y.codigo||'')==el.value);tr.querySelector('[data-c=descripcion]').value=x?.producto||''}
+function selLote(el){const tr=el.closest('tr'),m=lotes(CUR).filter(y=>y.lote==el.value),x=m.length==1?m[0]:null,f=tr.querySelector('[data-c=fecha_vencimiento]');f.value=x?.fecha||'';f.readOnly=!!x?.fecha;f.classList.toggle('lk',!!x?.fecha)}
+function dupRow(b){const tr=b.closest('tr');addRow({codigo:tr.querySelector('[data-c=codigo]').value,producto:tr.querySelector('[data-c=descripcion]').value,x:1})}
+function addRow(p){
+  const s=CUR,L=lotes(s),conL=L.some(x=>x.lote),one=L.length==1,l0=L[0]||{};
+  const i=(k,t='text',v='',ro=false)=>`<td><input data-c="${k}" type="${t}" value="${e(v)}" ${ro?'readonly class="lk"':''}></td>`;
+  const sel=(k,o,ph,fn='')=>`<td><select data-c="${k}" ${fn}><option value="">${ph}</option>${o.map(([v,t])=>`<option value="${e(v)}">${e(t)}</option>`).join('')}</select></td>`;
+  const P=prods(s),multi=P.length>1,cod=p?i('codigo','text',p.codigo||'',true):multi?sel('codigo',P.map(x=>[x.codigo||'',(x.codigo||'')+(x.producto?' — '+x.producto:'')]),'Elige producto','onchange="selProd(this)"'):i('codigo','text',P[0]?.codigo||'',P.length==1),des=p?i('descripcion','text',p.producto||'',true):i('descripcion','text',multi?'':(P[0]?.producto||s.descripcion||''),multi||P.length==1);
+  const fch=!conL&&L.length>1?sel('fecha_vencimiento',[...new Set(L.map(x=>x.fecha).filter(Boolean))].map(d=>[d,fd(d)]),'Elige fecha'):i('fecha_vencimiento','date',one?l0.fecha||'':'',one&&!!l0.fecha);
+  const lot=conL&&!one?sel('lote',[...new Set(L.map(x=>x.lote).filter(Boolean))].map(v=>[v,v]),'Elige lote','onchange="selLote(this)"'):i('lote','text',one?l0.lote||'':'',one&&!!l0.lote);
+  const act=(p?'<button class="x" style="color:var(--p)" title="Otro lote de este producto" onclick="dupRow(this)">⧉</button>':'')+(!p||p.x?'<button class="x" onclick="this.closest(\'tr\').remove()">✕</button>':'');
+  $('#rows').insertAdjacentHTML('beforeend','<tr>'+cod+des+i('unidad')+i('cantidad','number')+fch+lot+i('proveedor')+'<td style="white-space:nowrap">'+act+'</td></tr>');
+}
+async function send(id,empty){
+  const b=sessionStorage.bod,f=empty?[]:[...document.querySelectorAll('#rows tr')].map(r=>Object.fromEntries([...r.querySelectorAll('input,select')].map(i=>[i.dataset.c,i.value.trim()||null]))).filter(r=>r.cantidad||r.lote||r.proveedor);
+  if(!empty){if([...document.querySelectorAll('#rows tr')].some(r=>r.querySelector('[data-c=codigo]').readOnly&&!r.querySelector('[data-c=cantidad]').value))return alert('Completa la cantidad de cada producto (escribe 0 si no tienes).');if(!f.length)return alert('Agrega al menos una fila');if(f.some(r=>!r.codigo||!r.cantidad))return alert('Código y cantidad son obligatorios en cada fila')}
+  if(!confirm(empty?`¿Confirmas que ${b} no tiene existencias? Se registrará cada producto con cantidad 0.`:`¿Enviar ${f.length} fila(s) de ${b}? No podrás editarlas después.`))return;
+  const r=await rpc('enviar_bodega',{p_sol:id,p_filas:f,p_sin_existencias:!!empty});
+  if(r.error)return alert('No se pudo enviar: '+r.error.message);
+  $('#m').innerHTML='<div class="card"><h2>✅ Información enviada</h2><p>Gracias, '+b+'.</p><button onclick="portal()">Volver a solicitudes</button></div>';
+}
+
+/* ================= PANEL ADMIN (#admin) ================= */
+const VER='19-nov · menú lateral + dashboard por solicitud';
+const act=k=>document.querySelectorAll('.nv').forEach(b=>b.classList.toggle('on',b.dataset.k==k));
+function go(k){({nueva,lista,dash,oper,contactos,accesos})[k]()}
+async function admin(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){app.innerHTML=hero(`<h3>Acceso administrador / operador</h3><input id="em" placeholder="Correo"><input id="pw" type="password" placeholder="Contraseña" onkeydown="event.key=='Enter'&&login()"><button onclick="login()">Ingresar</button>`,'Panel de control: solicitudes, seguimiento por bodega y recepción.');return tilt()}
+  const em=session.user.email||'';
+  app.innerHTML=`<div class="ad"><aside class="sd"><div class="sd-logo"><img src="icon.jpg" alt=""><b>NEXOCORP</b></div>
+  <div class="sd-user"><div class="av">${e(em.slice(0,2).toUpperCase())}</div><span>${e(em)}</span><small>Administrador / Operador</small></div>
+  <nav>${[['nueva','✚','Nueva solicitud'],['lista','📋','Solicitudes'],['dash','📊','Dashboard'],['oper','📦','Operador'],['contactos','📱','Contactos'],['accesos','🔑','Accesos bodega']].map(([k,i,t])=>`<button class="nv" data-k="${k}" onclick="go('${k}')"><span>${i}</span>${t}</button>`).join('')}</nav>
+  <button class="nv out" onclick="sb.auth.signOut().then(admin)"><span>⎋</span>Salir</button><small style="text-align:center;opacity:.65;font-size:11px">Versión ${VER}</small></aside><section class="ad-main"><div id="m"></div></section></div>`;
+  dash();
+}
+async function login(){const{error}=await sb.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});error?alert(error.message):admin()}
+
+/* ---- Clave maestra (protege acciones sensibles) ---- */
+let MK={v:null,t:0};
+function maestra(){return new Promise(res=>{
+  if(MK.v&&Date.now()-MK.t<12e4)return res(MK.v);
+  const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:#000a;display:grid;place-items:center;z-index:99';
+  d.innerHTML='<div class="card" style="max-width:360px;width:90%"><h3>🔐 Clave maestra</h3><p class="mut">Esta acción está protegida. Ingresa la clave maestra para continuar.</p><input id="mk" type="password" autocomplete="off"><div class="row"><button id="mo">Confirmar</button><button class="ghost" id="mc">Cancelar</button></div></div>';
+  document.body.appendChild(d);const i=d.querySelector('#mk');i.focus();const end=v=>{d.remove();res(v)};
+  d.querySelector('#mo').onclick=()=>end(i.value||null);d.querySelector('#mc').onclick=()=>end(null);i.onkeydown=ev=>{if(ev.key=='Enter')end(i.value||null)}})}
+async function prot(fn,args){const m=await maestra();if(!m)return null;
+  const r=await sb.rpc(fn,{...args,p_maestra:m});
+  if(r.error){alert(r.error.message);return null}
+  if(r.data&&r.data.ok===false){MK.v=null;alert(r.data.error);return null}
+  MK={v:m,t:Date.now()};return r.data||{ok:true}}
+async function cambiarMaestra(){const n=$('#mn').value;if(n.length<8)return alert('La nueva clave maestra debe tener al menos 8 caracteres');if(n!==$('#mr').value)return alert('La confirmación no coincide');
+  const r=await sb.rpc('admin_cambiar_maestra',{p_actual:$('#ma').value,p_nueva:n});if(r.error)return alert(r.error.message);if(r.data.ok===false)return alert(r.data.error);
+  MK={v:null,t:0};alert('Clave maestra actualizada.');accesos()}
+
+/* ---- Dashboard ---- */
+let DS=[],DB=[],DR=[];
+async function dash(){act('dash');
+  $('#m').innerHTML='<p class="mut">Cargando…</p>';
+  await sb.rpc('cerrar_vencidas');
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,tipo,estado,plazo,recojo_desde,recojo_hasta').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  if(a.error||b.error)return $('#m').innerHTML='<div class="card">'+e((a.error||b.error).message)+'</div>';
+  DS=a.data;DB=b.data;
+  $('#m').innerHTML=`<div class="row"><select id="fs" onchange="pintar()" style="max-width:340px"><option value="">Todas las solicitudes abiertas</option><option value="*">Todas, incluidas las cerradas</option>${DS.map(s=>`<option value="${s.id}">${e(s.titulo)}${s.estado=='cerrada'?' (cerrada)':''}</option>`).join('')}</select>
+  <select id="ft" onchange="pintar()"><option value="">Ambos tipos</option><option value="informativa">Solo información</option><option value="llenado">Con llenado</option></select><button class="ghost" onclick="dl('avance_bodegas.csv',[['bodega','asignadas','vistas','procesadas','pendientes','vencidas','avance_%'],...DR.map(o=>[o.b,o.n,o.v+o.p,o.p,o.n-o.p-o.v,o.venc,o.pc])])">Exportar CSV</button></div><div id="db"></div>`;
+  pintar();
+}
+let DV='sol';
+const vt=()=>`<div class="row" style="margin:6px 0 12px"><button class="${DV=='sol'?'':'ghost'}" onclick="DV='sol';pintar()">📋 Por solicitud</button><button class="${DV=='bod'?'':'ghost'}" onclick="DV='bod';pintar()">🏢 Por bodega (acumulado)</button></div>`;
+const ring=(p,c,l,sub)=>`<div class="rg"><div class="rr" style="--p:${p};--c:${c}"><b>${p}%</b></div><span>${l}</span><small>${sub}</small></div>`;
+function dias(b){const m={},k=d=>new Date(d).toLocaleDateString('en-CA'),add=(d,f)=>{(m[k(d)]??={r:0,c:0})[f]++};
+  b.forEach(x=>{if(x.procesado_at)add(x.procesado_at,'r');if(x.recibido_at)add(x.recibido_at,'c')});
+  const ks=Object.keys(m).sort();if(!ks.length)return[];const o=[],d=new Date(ks[0]+'T00:00'),f=new Date(ks[ks.length-1]+'T00:00');
+  while(d<=f&&o.length<31){const q=d.toLocaleDateString('en-CA');o.push({d:q,...(m[q]||{r:0,c:0})});d.setDate(d.getDate()+1)}return o}
+function grafica(D){
+  if(!D.length)return '<p class="mut" style="margin:10px 0">Aún no hay respuestas para graficar.</p>';
+  const W=Math.max(320,D.length*56),H=170,P=30,mx=Math.max(1,...D.flatMap(x=>[x.r,x.c])),sw=(W-P-6)/D.length,y=v=>H-26-(v/mx)*(H-52);let g='';
+  [0,.5,1].forEach(t=>{const yy=y(mx*t);g+=`<line x1="${P}" x2="${W-6}" y1="${yy}" y2="${yy}" stroke="#e6e8f8"/><text x="${P-6}" y="${yy+4}" font-size="10" fill="#6b7099" text-anchor="end">${Math.round(mx*t)}</text>`});
+  D.forEach((x,i)=>{const cx=P+sw*i+sw/2;
+    g+=`<rect x="${cx-17}" y="${y(x.r)}" width="16" height="${H-26-y(x.r)}" rx="3" fill="#5046E5"><title>${x.r} bodegas respondieron</title></rect><rect x="${cx+1}" y="${y(x.c)}" width="16" height="${H-26-y(x.c)}" rx="3" fill="#1f9d6b"><title>${x.c} recibidas</title></rect><text x="${cx}" y="${H-8}" font-size="10" fill="#6b7099" text-anchor="middle">${x.d.slice(8)}/${x.d.slice(5,7)}</text>`});
+  return `<div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:none">${g}</svg></div><div class="row" style="font-size:13px;gap:16px"><span><i class="lg" style="background:#5046E5"></i>Respondieron</span><span><i class="lg" style="background:#1f9d6b"></i>Recibidas</span></div>`}
+function pintarSol(L){
+  const hoy=hoyL(),ch=x=>`<span class="chip ${x.procesado_at?'ok':x.visto_at?'vis':''}" style="padding:3px 10px;cursor:default">${x.bodega}${x.recibido_at?' 📬':''}</span>`;
+  $('#db').innerHTML=vt()+(L.map(s=>{
+    const info=s.tipo=='informativa',b=DB.filter(x=>x.solicitud_id==s.id),n=b.length||1,ok=b.filter(x=>x.procesado_at),fa=b.filter(x=>!x.procesado_at),rc=ok.filter(x=>x.recibido_at),por=ok.length-rc.length,venc=s.plazo&&s.plazo<hoy&&fa.length;
+    return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h3 style="margin:0">${e(s.titulo)}</h3><div class="row" style="gap:6px;margin-top:6px"><span class="tag">${info?'Solo información':'Con llenado'}</span><span class="tag">${s.estado}</span>${s.plazo?`<span class="tag" style="${venc?'background:#fde8e6;color:#c0392b':''}">⏰ Plazo ${fd(s.plazo)}${venc?' · vencido':''}</span>`:''}${s.recojo_desde?`<span class="tag" style="background:#e3f6ee;color:var(--ok)">📅 Recojo ${fd(s.recojo_desde)}${s.recojo_hasta&&s.recojo_hasta!=s.recojo_desde?' al '+fd(s.recojo_hasta):''}</span>`:''}</div></div>
+    <div class="row"><button class="ghost" onclick="ver('${s.id}')">Seguimiento</button>${fa.length&&s.estado=='abierta'?`<button onclick="wa('${s.id}',1)">📲 Avisar (${fa.length})</button>`:''}</div></div>
+    <div class="sol-g"><div class="rgs">${ring(Math.round(ok.length/n*100),'#5046E5',info?'Procesado':'Registro',`${ok.length} de ${b.length}`)}${ring(Math.round(rc.length/n*100),'#1f9d6b','Recibido',`${rc.length} de ${b.length} · ${por} por recibir`)}${ring(Math.round(fa.length/n*100),'#f0b429','Faltan',`${fa.length} bodegas`)}</div>
+    <div><b style="font-size:14px">Respuestas por día</b>${grafica(dias(b))}</div></div>
+    <details><summary>Ver bodegas (${ok.length} completaron · ${fa.length} faltan)</summary><div class="g2" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:8px"><div><b style="color:var(--ok)">✅ ${info?'Ya procesaron':'Ya enviaron'}</b><div class="chips">${ok.map(ch).join('')||'<span class="mut">Nadie aún</span>'}</div></div><div><b style="color:#c0392b">⏳ Faltan</b><div class="chips">${fa.map(ch).join('')||'<span class="mut">Todas completaron 🎉</span>'}</div></div></div></details></div>`}).join('')||'<p class="mut">No hay solicitudes con este filtro.</p>');
+}
+function pintar(){
+  const fs=$('#fs').value,ft=$('#ft').value,hoy=hoyL();
+  const L=DS.filter(s=>(fs=='*'||(fs?s.id==fs:s.estado=='abierta'))&&(!ft||s.tipo==ft)),sm=Object.fromEntries(L.map(s=>[s.id,s])),by={};
+  if(DV=='sol')return pintarSol(L);
+  DB.filter(x=>sm[x.solicitud_id]).forEach(x=>{const o=by[x.bodega]??={b:x.bodega,n:0,v:0,p:0,venc:0,l:[]},pz=sm[x.solicitud_id].plazo;
+    o.n++;x.procesado_at?o.p++:x.visto_at&&o.v++;if(!x.procesado_at&&pz&&pz<hoy)o.venc++;o.l.push(x)});
+  DR=Object.values(by).map(o=>({...o,pc:Math.round(o.p/o.n*100)})).sort((a,b)=>a.pc-b.pc||b.n-a.n);
+  const T=DR.reduce((a,o)=>({n:a.n+o.n,v:a.v+o.v,p:a.p+o.p,venc:a.venc+o.venc}),{n:0,v:0,p:0,venc:0}),pct=x=>T.n?Math.round(x/T.n*100):0;
+  $('#db').innerHTML=`${vt()}<div class="kpis"><div class="kpi"><b>${L.length}</b><span>Solicitudes en vista</span></div><div class="kpi"><b>${pct(T.p)}%</b><span>Completado (${T.p} de ${T.n})</span></div><div class="kpi"><b>${pct(T.p+T.v)}%</b><span>Abiertas (vistas o completadas)</span></div><div class="kpi"><b>${T.n-T.p-T.v}</b><span>Sin abrir</span></div><div class="kpi"><b style="color:${T.venc?'#c0392b':'inherit'}">${T.venc}</b><span>Vencidas sin completar</span></div></div>
+  <div class="row"><h3 style="margin:0">Avance por bodega</h3><button class="ghost" onclick="tgAll(1)">▾ Desplegar todo</button><button class="ghost" onclick="tgAll(0)">▸ Contraer todo</button></div><p class="mut" style="margin:4px 0">Verde = completada (informativa procesada / llenado enviado) · amarillo = abierta sin enviar · gris = pendiente. Clic en una bodega para ver su detalle.</p>
+  <div class="tw"><table><thead><tr><th>BODEGA</th><th>ASIGNADAS</th><th>VISTAS</th><th>COMPLETADAS</th><th>PENDIENTES</th><th>VENCIDAS</th><th>AVANCE</th></tr></thead><tbody>${DR.map(o=>`<tr class="cl" data-b="${o.b}" onclick="tg(this)"><td style="padding:10px"><b><span class="ch">▸</span> ${o.b}</b></td><td>${o.n}</td><td>${o.v+o.p}</td><td>${o.p}</td><td>${o.n-o.p-o.v}</td><td style="color:${o.venc?'#c0392b':'inherit'}">${o.venc||'–'}</td><td><div class="sb"><i class="p" style="width:${o.p/o.n*100}%"></i><i class="v" style="width:${o.v/o.n*100}%"></i></div> ${o.pc}%</td></tr>
+  <tr hidden><td colspan="7" style="padding:10px 16px;background:#f6f7fd">${o.l.map(x=>`${st(x,sm[x.solicitud_id].tipo=='informativa')}${x.recibido_at?' 📬 recibido':''} · ${e(sm[x.solicitud_id].titulo)} <span class="mut">(${sm[x.solicitud_id].tipo=='informativa'?'info':'llenado'}${sm[x.solicitud_id].plazo?' · plazo para procesar '+sm[x.solicitud_id].plazo:''})</span>`).join('<br>')}</td></tr>`).join('')||'<tr><td colspan="7" style="padding:14px" class="mut">No hay solicitudes con bodegas asignadas.</td></tr>'}</tbody></table></div>`;
+}
+
+function tg(tr){const d=tr.nextElementSibling;d.hidden=!d.hidden;tr.querySelector('.ch').textContent=d.hidden?'▸':'▾'}
+function tgAll(o){document.querySelectorAll('tr.cl').forEach(tr=>{tr.nextElementSibling.hidden=!o;tr.querySelector('.ch').textContent=o?'▾':'▸'})}
+
+/* ---- Dashboard del operador (recibido) ---- */
+let OS=[],OB=[],OD=[],OIDS=[],OPEN=[];
+async function oper(){act('oper');
+  OPEN=[...document.querySelectorAll('tr.cl')].filter(t=>!t.nextElementSibling.hidden).map(t=>t.dataset.b);const prev=$('#os')?.value||'';
+  $('#m').innerHTML='<p class="mut">Cargando…</p>';
+  await sb.rpc('cerrar_vencidas');
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,estado,tipo').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  if(a.error||b.error)return $('#m').innerHTML='<div class="card">'+e((a.error||b.error).message)+'<br>¿Ya ejecutaste migracion_3_recojo_recibido.sql?</div>';
+  OS=a.data;OB=b.data;
+  $('#m').innerHTML=`<h2>Dashboard del operador · recepción</h2><p class="mut">Marca como recibido lo que cada bodega ya envió (con llenado) o ya vio (solo información). Mide tu avance en ambos tipos.</p>
+  <div class="row"><select id="os" onchange="opintar()" style="max-width:340px"><option value="">Todas las solicitudes abiertas</option><option value="*">Todas, incluidas las cerradas</option>${OS.map(s=>`<option value="${s.id}">${e(s.titulo)}${s.estado=='cerrada'?' (cerrada)':''}</option>`).join('')}</select>
+  <select id="ot" onchange="opintar()"><option value="">Ambos tipos</option><option value="informativa">Solo información</option><option value="llenado">Con llenado</option></select><button class="ghost" onclick="tgAll(1)">▾ Desplegar todo</button><button class="ghost" onclick="tgAll(0)">▸ Contraer todo</button>
+  <button class="ghost" onclick="dl('recepcion_operador.csv',[['bodega','asignadas','enviadas','recibidas','por_recibir'],...OD.map(o=>[o.b,o.n,o.env,o.rec,o.env-o.rec])])">Exportar CSV</button></div><div id="od"></div>`;
+  $('#os').value=prev;opintar();
+}
+let OV='sol';
+const ovt=()=>`<div class="row" style="margin:6px 0 12px"><button class="${OV=='sol'?'':'ghost'}" onclick="OV='sol';opintar()">📋 Por solicitud</button><button class="${OV=='bod'?'':'ghost'}" onclick="OV='bod';opintar()">🏢 Por bodega</button></div>`;
+function opSol(L){
+  const ch=(x,c,ex='')=>`<span class="chip ${c}" style="padding:3px 10px;cursor:${ex?'pointer':'default'}" ${ex}>${x.bodega}</span>`;
+  $('#od').innerHTML=ovt()+`<p class="mut" style="margin:0 0 10px">Tu avance de recepción en cada solicitud. Clic en una bodega de "Por recibir" para marcarla como recibida.</p>`+(L.map(s=>{
+    const inf=s.tipo=='informativa',b=OB.filter(x=>x.solicitud_id==s.id),rec=b.filter(x=>x.procesado_at&&x.recibido_at),por=b.filter(x=>x.procesado_at&&!x.recibido_at),no=b.filter(x=>!x.procesado_at),n=b.length||1,pc=Math.round(rec.length/n*100);
+    return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${e(s.titulo)} <span class="tag">${inf?'Solo información':'Con llenado'}</span> <span class="tag">${s.estado}</span></h3>${por.length?`<button onclick="recibirSol('${s.id}')">📬 Recibir todas (${por.length})</button>`:''}</div>
+    <div class="row" style="margin-top:8px"><div class="sb" style="flex:1"><i class="p" style="width:${rec.length/n*100}%"></i><i class="v" style="width:${por.length/n*100}%"></i></div><b>${pc}%</b><span class="mut">${rec.length} recibidas de ${b.length}</span></div>
+    <div class="g2" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:12px">
+    <div><b style="color:var(--ok)">📬 Recibidas (${rec.length})</b><div class="chips">${rec.map(x=>`<span class="chip ok" style="padding:3px 10px">${x.bodega} <a title="Quitar recibido" onclick="confirm('¿Quitar el recibido de ${x.bodega}?')&&recibir('${x.bodega}','${s.id}',0)">↺</a></span>`).join('')||'<span class="mut">Ninguna aún</span>'}</div></div>
+    <div><b style="color:#8a6100">✅ Por recibir (${por.length})</b><div class="chips">${por.map(x=>ch(x,'vis',`onclick="recibir('${x.bodega}','${s.id}')" title="Marcar recibido"`)).join('')||'<span class="mut">Nada pendiente de recibir</span>'}</div></div>
+    <div><b style="color:#c0392b">⏳ Aún no ${inf?'procesan':'envían'} (${no.length})</b><div class="chips">${no.map(x=>ch(x,'')).join('')||'<span class="mut">Todas ya completaron 🎉</span>'}</div></div></div></div>`}).join('')||'<p class="mut">No hay solicitudes con este filtro.</p>');
+}
+async function recibirSol(id){const n=OB.filter(x=>x.solicitud_id==id&&x.procesado_at&&!x.recibido_at).length;if(!n||!confirm(`¿Marcar como recibidas las ${n} bodegas que ya completaron esta solicitud?`))return;
+  const r=await sb.from('solicitud_bodegas').update({recibido_at:new Date().toISOString()}).eq('solicitud_id',id).not('procesado_at','is',null).is('recibido_at',null);r.error?alert(r.error.message):oper()}
+function opintar(){
+  const fs=$('#os').value,L=OS.filter(s=>(fs=='*'||(fs?s.id==fs:s.estado=='abierta'))&&(!$('#ot').value||s.tipo==$('#ot').value)),sm=Object.fromEntries(L.map(s=>[s.id,s])),by={},pc=(a,b)=>b?Math.round(a/b*100):0;OIDS=L.map(s=>s.id);
+  OB.filter(x=>sm[x.solicitud_id]).forEach(x=>{const o=by[x.bodega]??={b:x.bodega,n:0,env:0,rec:0,l:[]};o.n++;if(x.procesado_at)o.env++;if(x.procesado_at&&x.recibido_at)o.rec++;o.l.push(x)});
+  OD=Object.values(by).sort((a,b)=>(b.env-b.rec)-(a.env-a.rec)||a.b.localeCompare(b.b));
+  if(OV=='sol')return opSol(L);
+  const T=OD.reduce((a,o)=>({n:a.n+o.n,env:a.env+o.env,rec:a.rec+o.rec}),{n:0,env:0,rec:0});
+  $('#od').innerHTML=`${ovt()}<div class="kpis"><div class="kpi"><b>${T.n}</b><span>Solicitudes asignadas</span></div><div class="kpi"><b>${T.env}</b><span>Completadas por bodegas (enviadas o vistas)</span></div><div class="kpi"><b>${T.rec}</b><span>Recibidas por ti</span></div><div class="kpi"><b style="color:${T.env-T.rec?'#8a6100':'inherit'}">${T.env-T.rec}</b><span>Por recibir</span></div><div class="kpi"><b>${pc(T.rec,T.env)}%</b><span>Mi avance (de lo enviado)</span></div><div class="kpi"><b>${pc(T.rec,T.n)}%</b><span>Avance total</span></div></div>
+  <div class="tw"><table><thead><tr><th>BODEGA</th><th>ASIGNADAS</th><th>COMPLETADAS</th><th>RECIBIDAS</th><th>POR RECIBIR</th><th>AVANCE (verde = recibido · amarillo = por recibir)</th><th></th></tr></thead><tbody>${OD.map(o=>{const por=o.env-o.rec;
+  return `<tr class="cl" data-b="${o.b}" onclick="tg(this)"><td style="padding:10px"><b><span class="ch">▸</span> ${o.b}</b></td><td>${o.n}</td><td>${o.env}</td><td>${o.rec}</td><td style="font-weight:700;color:${por?'#8a6100':'inherit'}">${por}</td><td><div class="sb"><i class="p" style="width:${o.rec/o.n*100}%"></i><i class="v" style="width:${por/o.n*100}%"></i></div> ${pc(o.rec,o.n)}%</td><td>${por?`<button onclick="event.stopPropagation();recibir('${o.b}')">📬 Recibir todo</button>`:''}</td></tr>
+  <tr hidden><td colspan="7" style="padding:10px 16px;background:#f6f7fd">${o.l.map(x=>{const inf=sm[x.solicitud_id].tipo=='informativa',t=e(sm[x.solicitud_id].titulo)+` <span class="mut">(${inf?'info':'llenado'})</span>`;
+   return x.procesado_at?(x.recibido_at?`📬 Recibido ${fh(x.recibido_at)} · ${t} <a style="cursor:pointer" onclick="recibir('${o.b}','${x.solicitud_id}',0)" title="Quitar recibido">↺</a>`:`✅ ${inf?'Procesado':'Enviado'} ${fh(x.procesado_at)}${x.sin_existencias?' (sin existencias)':''}${x.respuesta?` “${e(x.respuesta)}”`:''} · ${t} <button style="padding:3px 10px;margin-left:6px" onclick="recibir('${o.b}','${x.solicitud_id}')">Marcar recibido</button>`):`⏳ La bodega aún no ${inf?'lo procesa':'envía'} · ${t}`}).join('<br>')}</td></tr>`}).join('')||'<tr><td colspan="7" style="padding:14px" class="mut">No hay solicitudes con llenado.</td></tr>'}</tbody></table></div>`;
+  OPEN.forEach(b=>{const t=document.querySelector(`tr.cl[data-b="${b}"]`);t&&tg(t)});
+}
+async function recibir(b,id,v=1){
+  let q=sb.from('solicitud_bodegas').update({recibido_at:v?new Date().toISOString():null}).eq('bodega',b).not('procesado_at','is',null);
+  if(id)q=q.eq('solicitud_id',id);
+  else{const n=OB.filter(x=>x.bodega==b&&OIDS.includes(x.solicitud_id)&&x.procesado_at&&!x.recibido_at).length;if(!confirm(`¿Marcar como recibidas las ${n} solicitud(es) enviadas por ${b}?`))return;q=q.in('solicitud_id',OIDS).is('recibido_at',null)}
+  const r=await q;r.error?alert(r.error.message):oper();
+}
+
+/* ---- Solicitudes ---- */
+function nueva(){act('nueva');
+  $('#m').innerHTML=`<div class="card"><h2>Nueva solicitud</h2>
+  <select id="tp"><option value="llenado">Con llenado: las bodegas cargan datos</option><option value="informativa">Solo información: las bodegas la procesan, escriben un detalle y confirman</option></select>
+  <input id="t" placeholder="Título (ej. Repliegue EVRA PROMEDICAL)">
+  <label class="mut">Productos (código SKU y descripción): agrega los que necesites</label><div id="pl"></div><button class="ghost" onclick="addProd()">+ Agregar producto</button>
+  <input id="pv" placeholder="Proveedor (ej. 000184 PROMEDICAL S.A.)">
+  <div class="g2"><input id="mo" placeholder="Motivo (ej. SOLICITUD)"><input id="ro" placeholder="Rótulo"></div>
+  <input id="de" placeholder="Bodegas destino / a dónde enviar">
+  <div class="g2"><div><label class="mut">Plazo para procesar</label><input id="pz" type="date"></div><div></div></div>
+  <div class="g2"><div><label class="mut">📅 Recojo: desde</label><input id="rd" type="date"></div><div><label class="mut">Recojo: hasta (vacío = un solo día)</label><input id="rh" type="date"></div></div>
+  <input id="d" placeholder="Instrucciones adicionales (opcional)">
+  <label class="mut">Documento adjunto (opcional)</label><input id="f" type="file">
+  <label class="sw"><input type="checkbox" id="ca" onchange="$('#cb').hidden=!this.checked;if(this.checked&&!$('#lt').children.length)addLote()"> Aplicar condición de lote y/o fecha (si no, se muestra TODO EL STOCK)</label>
+  <div id="cb" hidden><div id="lt"></div><button class="ghost" onclick="addLote()">+ Agregar lote</button>
+  <div class="g2"><div><label class="mut">Fecha común (se aplica a los lotes que no tengan fecha propia)</label><input id="cf" type="date"></div></div></div>
+  <h3>Bodegas destinatarias <button class="ghost" onclick="mk(1)">Todas</button> <button class="ghost" onclick="mk(0)">Ninguna</button></h3>
+  <div class="chips">${BOD.map(b=>`<label class="chip"><input type="checkbox" value="${b}">${b}</label>`).join('')}</div>
+  <button onclick="crear()">Publicar solicitud</button></div>`;addProd();
+}
+function addProd(){$('#pl').insertAdjacentHTML('beforeend','<div class="g2 pr" style="grid-template-columns:1fr 2fr auto"><input class="pc" placeholder="Código SKU"><input class="pd" placeholder="Descripción del producto"><button class="x" onclick="this.parentElement.remove()">✕</button></div>')}
+function addLote(){$('#lt').insertAdjacentHTML('beforeend','<div class="g2 lr" style="grid-template-columns:2fr 2fr auto"><input class="ll" placeholder="Lote"><input class="lf" type="date" title="Fecha de vencimiento"><button class="x" onclick="this.parentElement.remove()">✕</button></div>')}
+async function crear(){
+  const bs=[...document.querySelectorAll('.chips input:checked')].map(i=>i.value);
+  if(!$('#t').value.trim()||!bs.length)return alert('Falta el título o elegir bodegas');
+  if($('#rh').value&&!$('#rd').value)return alert('Indica la fecha de recojo "desde"');
+  if($('#rh').value&&$('#rh').value<$('#rd').value)return alert('El recojo "hasta" no puede ser antes del "desde"');
+  let url=null;const fl=$('#f').files[0];
+  if(fl){const p=Date.now()+'_'+fl.name.replace(/[^\w.]/g,'_'),u=await sb.storage.from('docs').upload(p,fl);if(u.error)return alert(u.error.message);url=sb.storage.from('docs').getPublicUrl(p).data.publicUrl}
+  const ca=$('#ca').checked,v=id=>$(id).value.trim()||null,pr=[...document.querySelectorAll('.pr')].map(r=>({codigo:r.querySelector('.pc').value.trim()||null,producto:r.querySelector('.pd').value.trim()||null})).filter(x=>x.codigo||x.producto);
+  let lots=ca?[...document.querySelectorAll('.lr')].map(r=>({lote:r.querySelector('.ll').value.trim()||null,fecha:r.querySelector('.lf').value||$('#cf').value||null})).filter(x=>x.lote||x.fecha):[];
+  if(ca&&!lots.length&&$('#cf').value)lots=[{lote:null,fecha:$('#cf').value}];
+  if(ca&&!lots.length)return alert('Agrega al menos un lote o una fecha, o desmarca la condición');
+  const{data,error}=await sb.from('solicitudes').insert({tipo:$('#tp').value,titulo:v('#t'),productos:pr,producto:pr[0]?.producto||null,codigo:pr[0]?.codigo||null,proveedor:v('#pv'),motivo:v('#mo'),rotulo:v('#ro'),destino:v('#de'),plazo:v('#pz'),recojo_desde:v('#rd'),recojo_hasta:v('#rh'),descripcion:v('#d'),doc_url:url,cond_activa:ca,cond_lotes:lots}).select().single();
+  if(error)return alert(error.message);
+  const r=await sb.from('solicitud_bodegas').insert(bs.map(b=>({solicitud_id:data.id,bodega:b})));
+  r.error?alert(r.error.message):lista();
+}
+async function lista(){act('lista');
+  await sb.rpc('cerrar_vencidas');
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('*').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  $('#m').innerHTML=a.data.map(s=>{const info=s.tipo=='informativa',x=b.data.filter(y=>y.solicitud_id==s.id),p=x.filter(y=>y.procesado_at).length,v=x.filter(y=>y.visto_at&&!y.procesado_at).length,n=x.length||1;
+  return `<div class="card"><h3>${e(s.titulo)} <span class="tag">${s.estado}</span> <span class="tag">${info?'Solo información':'Con llenado'}</span></h3>${datos(s)}
+  <div class="sb"><i class="p" style="width:${p/n*100}%"></i><i class="v" style="width:${v/n*100}%"></i></div>
+  <p class="mut">${p} ${info?'procesadas':'enviadas'}${info?'':` · ${v} abiertas sin enviar`} · ${x.length-p-v} pendientes · ${x.filter(y=>y.recibido_at).length} recibidas · de ${x.length} bodegas${x.length?'':' — asigna bodegas para medir el avance'}</p>
+  <div class="row"><button onclick="ver('${s.id}')">Seguimiento</button><button class="ghost" onclick="asignar('${s.id}')">Asignar bodegas</button><button class="ghost" onclick="wa('${s.id}')">📲 Avisar por WhatsApp</button>
+  <button class="ghost" onclick="${s.estado=='abierta'?`est('${s.id}')`:`reabrirSol('${s.id}')`}">${s.estado=='abierta'?'Cerrar':'Reabrir'}</button>
+  <button class="ghost" onclick="del('${s.id}')">Eliminar</button></div></div>`}).join('')||'<p class="mut">Aún no hay solicitudes. Crea la primera.</p>';
+}
+async function est(id){if(!confirm('¿Cerrar esta solicitud? Las bodegas ya no podrán marcarla ni enviar datos.'))return;await sb.from('solicitudes').update({estado:'cerrada',cerrada_at:new Date().toISOString()}).eq('id',id);lista()}
+async function reabrirSol(id){const{data:x}=await sb.from('solicitudes').select('titulo').eq('id',id).single();
+  $('#m').innerHTML=`<div class="card"><h2>Reabrir solicitud</h2><p><b>${e(x.titulo)}</b></p><p class="mut">Las solicitudes se cierran solas al vencer el plazo para procesar. Define un nuevo plazo (si lo dejas vacío, no se cerrará sola).</p><label class="mut">Nuevo plazo para procesar</label><input id="np" type="date"><div class="row"><button onclick="reabrirOk('${id}')">Reabrir</button><button class="ghost" onclick="lista()">Cancelar</button></div></div>`}
+async function reabrirOk(id){const np=$('#np').value||null;if(np&&np<hoyL())return alert('El nuevo plazo no puede estar en el pasado');if(await prot('admin_reabrir_solicitud',{p_id:id,p_plazo:np}))lista()}
+async function del(id){if(!confirm('¿Eliminar la solicitud y todos sus datos? No se puede deshacer.'))return;if(await prot('admin_eliminar_solicitud',{p_id:id}))lista()}
+async function asignar(id){
+  const{data}=await sb.from('solicitud_bodegas').select('bodega').eq('solicitud_id',id),ya=new Set(data.map(x=>x.bodega));
+  $('#m').innerHTML=`<div class="card"><h2>Asignar bodegas</h2><p class="mut">Las ya asignadas aparecen bloqueadas.</p><div class="row"><button class="ghost" onclick="mk(1)">Todas</button><button class="ghost" onclick="mk(0)">Ninguna</button></div>
+  <div class="chips">${BOD.map(b=>`<label class="chip"><input type="checkbox" value="${b}" ${ya.has(b)?'checked disabled':''}>${b}</label>`).join('')}</div>
+  <div class="row"><button onclick="asig2('${id}')">Agregar seleccionadas</button><button class="ghost" onclick="lista()">Cancelar</button></div></div>`;
+}
+async function asig2(id){const bs=[...document.querySelectorAll('.chips input:checked:not(:disabled)')].map(i=>i.value);if(!bs.length)return alert('Elige al menos una bodega');
+  const r=await sb.from('solicitud_bodegas').insert(bs.map(b=>({solicitud_id:id,bodega:b})));r.error?alert(r.error.message):lista()}
+async function reab(id,b,info){if(!confirm(info?`¿Quitar el "procesado" de ${b}?`:`¿Reabrir ${b}? Se borrarán sus filas enviadas.`))return;
+  if(await prot('admin_reabrir_bodega',{p_sol:id,p_bod:b,p_info:!!info}))ver(id,SG.f)}
+let R=[],SG={};
+async function ver(id,f='all'){
+  await sb.rpc('cerrar_vencidas');
+  const[x,r,b]=await Promise.all([sb.from('solicitudes').select('*').eq('id',id).single(),sb.from('registros').select('*').eq('solicitud_id',id).order('bodega').limit(10000),sb.from('solicitud_bodegas').select('*').eq('solicitud_id',id).order('bodega')]);
+  R=r.data;SG={id,s:x.data,b:b.data};sg(f);
+}
+async function rcb(id,b,v){await sb.from('solicitud_bodegas').update({recibido_at:v?new Date().toISOString():null}).eq('solicitud_id',id).eq('bodega',b).not('procesado_at','is',null);ver(id,SG.f)}
+function sg(f){
+  SG.f=f;const{id,s,b}=SG,info=s.tipo=='informativa',done=x=>!!x.procesado_at;
+  const stt=x=>x.recibido_at?'📬 Recibido':done(x)?(info?'✅ Procesado':x.sin_existencias?'✅ Enviado (sin existencias)':'✅ Enviado'):x.visto_at?'👁 Abierta, sin enviar':'⏳ Pendiente';
+  const p=b.filter(done).length,falt=b.length-p,rc=b.filter(x=>x.recibido_at).length,t=x=>x?fh(x):'–';
+  const L=b.filter(x=>f=='falt'?!done(x):f=='ok'?done(x):true).sort((x,y)=>done(x)-done(y)||x.bodega.localeCompare(y.bodega));
+  const acc=x=>done(x)?((x.recibido_at?`<a style="cursor:pointer" onclick="rcb('${id}','${x.bodega}',0)">↺ quitar recibido</a>`:`<button style="padding:4px 10px" onclick="rcb('${id}','${x.bodega}',1)">📬 Recibido</button>`)+' ')+`<a style="cursor:pointer" onclick="reab('${id}','${x.bodega}',${info})">↺ reabrir</a>`:'';
+  $('#m').innerHTML=`<div class="row"><button class="ghost" onclick="lista()">← Volver</button>
+  <button class="ghost" onclick="dl('seguimiento.csv',[['bodega','estado','abierto','completado','respuesta','recibido'],...SG.b.map(x=>[x.bodega,stt(x),x.visto_at||'',x.procesado_at||'',x.respuesta||'',x.recibido_at||''])])">Exportar seguimiento</button>
+  ${info?'':`<button class="ghost" onclick="dl('consolidado.csv',[COL,...R.map(x=>COL.map(c=>x[c]))])">Exportar datos (CSV)</button>`}
+  ${falt&&s.estado=='abierta'?`<button onclick="wa('${id}',1)">📲 Avisar a los que faltan (${falt})</button>`:''}</div>
+  <h2>${e(s.titulo)} <span class="tag">${s.estado}</span> <span class="tag">${info?'Solo información':'Con llenado'}</span></h2>
+  <div class="kpis"><div class="kpi"><b>${b.length?Math.round(p/b.length*100):0}%</b><span>${p} de ${b.length} ${info?'procesaron':'enviaron'}</span></div><div class="kpi"><b style="color:${falt?'#c0392b':'inherit'}">${falt}</b><span>Faltan</span></div><div class="kpi"><b>${rc}</b><span>Recibidas por ti</span></div><div class="kpi"><b style="font-size:22px">${s.plazo?fd(s.plazo):'–'}</b><span>Plazo para procesar</span></div></div>
+  <div class="row"><select onchange="sg(this.value)"><option value="all" ${f=='all'?'selected':''}>Todas (${b.length})</option><option value="falt" ${f=='falt'?'selected':''}>Faltan (${falt})</option><option value="ok" ${f=='ok'?'selected':''}>${info?'Ya procesaron':'Ya enviaron'} (${p})</option></select></div>
+  <div class="tw"><table style="min-width:720px"><thead><tr><th>BODEGA</th><th>ESTADO</th>${info?'<th>FECHA Y HORA</th><th>RESPUESTA</th><th>RECIBIDO</th>':'<th>ABIERTO</th><th>ENVIADO</th><th>RECIBIDO</th>'}<th></th></tr></thead>
+  <tbody>${L.map(x=>`<tr><td style="padding:8px"><b>${x.bodega}</b></td><td>${stt(x)}</td>${info?`<td>${t(x.procesado_at)}</td><td>${e(x.respuesta||'–')}</td><td>${t(x.recibido_at)}</td>`:`<td>${t(x.visto_at)}</td><td>${t(x.procesado_at)}</td><td>${t(x.recibido_at)}</td>`}<td style="padding:6px">${acc(x)}</td></tr>`).join('')||'<tr><td colspan="6" style="padding:14px" class="mut">Sin bodegas en este filtro.</td></tr>'}</tbody></table></div>
+  ${info?'':`<h3>Datos enviados · ${R.length} filas</h3><div class="tw"><table><thead><tr>${COL.map(c=>`<th>${c.replace('_',' ').toUpperCase()}</th>`).join('')}</tr></thead><tbody>${R.map(x=>`<tr>${COL.map(c=>`<td style="padding:8px">${e(x[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}`;
+}
+
+/* ---- Contactos y aviso por WhatsApp (manual, gratis) ---- */
+let CT={},WS=new Set(),WM={},WL=[];
+const tel=v=>{let d=String(v).replace(/\D/g,'');if(d.length==8)d='591'+d;return d};
+async function contactos(){act('contactos');
+  const r=await sb.from('bodega_contactos').select('*').order('bodega');
+  if(r.error)return $('#m').innerHTML='<div class="card">'+e(r.error.message)+'<br>¿Ya ejecutaste migracion_5_whatsapp_lotes.sql?</div>';
+  CT={};r.data.forEach(c=>(CT[c.bodega]??=[]).push(c));
+  const bs=[...new Set([...BOD,...Object.keys(CT)])].sort();
+  $('#m').innerHTML=`<div class="card"><h2>Contactos de WhatsApp</h2><p class="mut">Puedes sumar más de un número por bodega. Escribe 8 dígitos o con +591.</p></div>
+  <div class="tw"><table style="min-width:640px"><thead><tr><th>BODEGA</th><th>NÚMEROS</th><th>AGREGAR</th></tr></thead><tbody>${bs.map(b=>`<tr><td style="padding:8px"><b>${b}</b></td><td>${(CT[b]||[]).map(c=>`<span class="chip">+${c.telefono} <a onclick="delTel(${c.id})" title="Quitar">✕</a></span>`).join(' ')||'<span class="mut">⚠️ sin número</span>'}</td><td><div class="row"><input id="n_${b}" placeholder="Nuevo número" style="margin:0;max-width:170px"><button class="ghost" onclick="addTel('${b}')">+ Agregar</button></div></td></tr>`).join('')}</tbody></table></div>`;
+}
+async function addTel(b){const t=tel($('#n_'+b).value);if(t.length<11)return alert('Número inválido');if(await prot('admin_contacto',{p_accion:'add',p_bodega:b,p_telefono:t}))contactos()}
+async function delTel(id){if(confirm('¿Quitar este número?')&&await prot('admin_contacto',{p_accion:'del',p_id:id}))contactos()}
+async function wa(id,pend){
+  const[s,b,c]=await Promise.all([sb.from('solicitudes').select('*').eq('id',id).single(),sb.from('solicitud_bodegas').select('*').eq('solicitud_id',id).order('bodega'),sb.from('bodega_contactos').select('*')]);
+  if(c.error)return alert(c.error.message+'\n¿Ya ejecutaste migracion_5_whatsapp_lotes.sql?');
+  WS=new Set();WM={b:b.data,c:c.data};const x=s.data,info=x.tipo=='informativa',link=location.origin+location.pathname,
+   rj=x.recojo_desde?(x.recojo_hasta&&x.recojo_hasta!=x.recojo_desde?`del ${fd(x.recojo_desde)} al ${fd(x.recojo_hasta)}`:fd(x.recojo_desde)):'';
+  const msg=`📢 *LOGÍSTICA INVERSA* · Hola Bodega {bodega}\n\n*${x.titulo}*\n${info?'Solo información: ingresa al portal, llena el campo y confirma "Procesado".':'Debes llenar la información en el portal.'}${x.plazo?`\n⏰ Plazo para procesar: ${fd(x.plazo)}`:''}${rj?`\n📅 Fecha de recojo: ${rj}`:''}\n\n🔗 ${link}\nIngresa con tu código de bodega y tu clave.`;
+  $('#m').innerHTML=`<div class="row"><button class="ghost" onclick="lista()">← Volver</button></div><h2>📲 Avisar por WhatsApp · ${e(x.titulo)}</h2>
+  <div class="card"><label class="mut">Mensaje (puedes editarlo; {bodega} se cambia por el código de cada bodega)</label><textarea id="wm" rows="9">${e(msg)}</textarea>
+  <label class="sw"><input type="checkbox" id="wp" onchange="wlist()"> Solo bodegas pendientes (recordatorio)</label>
+  <p class="mut">Sale desde el WhatsApp que tengas abierto en WhatsApp Web / Escritorio (tu número madre). Cada botón abre el chat con el mensaje listo: solo pulsas enviar y vuelves aquí.</p>
+  <div class="row"><button onclick="wnext()">▶ Enviar al siguiente</button><span id="wc" class="mut"></span></div></div><div id="wl"></div>`;
+  if(pend)$('#wp').checked=true;wlist();
+}
+function wlist(){
+  const pend=$('#wp').checked;
+  WL=WM.b.filter(x=>!pend||!x.procesado_at).flatMap(x=>{const cs=WM.c.filter(c=>c.bodega==x.bodega);return cs.length?cs.map(c=>({b:x.bodega,t:c.telefono})):[{b:x.bodega,t:null}]});
+  $('#wl').innerHTML=`<div class="tw"><table style="min-width:520px"><thead><tr><th>BODEGA</th><th>NÚMERO</th><th></th></tr></thead><tbody>${WL.map((w,i)=>`<tr><td style="padding:8px"><b>${w.b}</b></td><td>${w.t?'+'+w.t:'⚠️ sin número'}</td><td>${w.t?`<button class="ghost" onclick="wsend(${i})">${WS.has(w.b+w.t)?'✅ Abierto · reabrir':'💬 Enviar'}</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+  $('#wc').textContent=`${WL.filter(w=>w.t&&WS.has(w.b+w.t)).length} de ${WL.filter(w=>w.t).length} chats abiertos`;
+}
+function wsend(i){const w=WL[i],m=$('#wm').value.replace(/\{bodega\}/g,w.b);window.open(`https://wa.me/${w.t}?text=${encodeURIComponent(m)}`,'_blank');WS.add(w.b+w.t);wlist()}
+function wnext(){const i=WL.findIndex(w=>w.t&&!WS.has(w.b+w.t));i<0?alert('Ya abriste todos los chats de la lista ✅'):wsend(i)}
+
+/* ---- Accesos de bodegas ---- */
+let ACC={};
+async function accesos(){act('accesos');
+  const r=await sb.rpc('admin_accesos');
+  if(r.error)return $('#m').innerHTML='<div class="card">'+e(r.error.message)+'<br>¿Ya ejecutaste las migraciones SQL en Supabase?</div>';
+  ACC=Object.fromEntries(r.data.map(x=>[x.bodega,x]));const falt=BOD.filter(b=>!ACC[b]).length;
+  $('#m').innerHTML=`<div class="card"><h2>Accesos de bodegas</h2><p class="mut">Usuario y clave inicial = código de la bodega (ej. B301 / B301). Puedes cambiar la clave de cualquiera cuando haga falta; al cambiarla se desbloquea y se cierra su sesión.</p>
+  <button onclick="clave('')" ${falt?'':'disabled'}>Crear claves faltantes (${falt})</button></div>
+  <div class="card"><h3>🔐 Clave maestra</h3><p class="mut">Protege los cambios sensibles: claves de bodegas, números de WhatsApp, reabrir y eliminar solicitudes. Solo el administrador debe conocerla.</p><div class="g2"><input id="ma" type="password" placeholder="Clave maestra actual"><input id="mn" type="password" placeholder="Nueva (mínimo 8)"></div><input id="mr" type="password" placeholder="Repite la nueva"><button onclick="cambiarMaestra()">Cambiar clave maestra</button></div>
+  <div class="tw"><table style="min-width:600px"><thead><tr><th>BODEGA</th><th>CLAVE</th><th>ÚLTIMO INGRESO</th><th></th></tr></thead><tbody>${BOD.map(b=>{const a=ACC[b];return `<tr><td style="padding:8px"><b>${b}</b></td><td>${a?(a.bloqueada?'🔒 Bloqueada (15 min)':a.personalizada?'🔑 Personalizada':'✅ Igual al código'):'⚠️ Sin clave'}</td><td>${a?.ultimo_acceso?fh(a.ultimo_acceso):'–'}</td><td><button class="ghost" onclick="clave('${b}')">Cambiar clave</button></td></tr>`}).join('')}</tbody></table></div>`;
+}
+async function clave(b){
+  let c=null;
+  if(b){c=prompt(`Nueva clave para ${b} (mínimo 4 caracteres).\nDéjala vacía para volver a ${b}.`);if(c===null)return;c=c.trim()||null}
+  const l=b?[b]:BOD.filter(x=>!ACC[x]);if(!l.length)return;
+  const r=await prot('admin_asignar_claves',{p_bodegas:l,p_clave:c});if(!r)return;
+  alert(b?`Clave de ${b} actualizada${c?'':' (vuelve a ser '+b+')'}.`:'Listo: cada bodega entra con su código como clave.');accesos();
+}
+addEventListener('hashchange',init);init();
+</script></body></html>
