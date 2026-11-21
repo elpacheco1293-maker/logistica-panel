@@ -58,6 +58,11 @@ button:hover{background:var(--p2)}button:disabled{opacity:.5;cursor:default}butt
 @keyframes fl{0%,100%{translate:0 0}50%{translate:0 -14px}}
 @media(max-width:900px){.hz-in{grid-template-columns:1fr;padding:22px 20px 60px}.sc{display:none}.hz-foot{left:20px}}
 @media(prefers-reduced-motion:reduce){.hz *{animation:none!important;transition:none!important}}
+/* ===== Comunicados ===== */
+.paper{background:#fff;color:#111;border:1px solid #d9dcef;border-radius:10px;padding:22px 26px;font:italic 16px/1.55 'Times New Roman',Georgia,serif;box-shadow:0 2px 10px #0002}
+.paper p{margin:0 0 14px}.paper .it{padding-left:34px}.paper ul{margin:6px 0 0;padding-left:26px}.paper li{margin:6px 0}
+.paper mark{background:#FFEB3B;color:#111;font-weight:700;text-decoration:underline;padding:0 3px}.paper u{font-weight:700}
+.com-g{display:grid;grid-template-columns:minmax(320px,440px) 1fr;gap:20px;align-items:start}@media(max-width:1000px){.com-g{grid-template-columns:1fr}}
 /* ===== Admin: menú lateral y gráficas ===== */
 .ad{display:grid;grid-template-columns:250px 1fr;min-height:100vh;background:var(--bg)}
 .sd{background:linear-gradient(170deg,#7a1f8c 0%,#3a2a9c 45%,#1b2154 100%);color:#fff;padding:22px 16px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;height:100vh}
@@ -124,16 +129,16 @@ async function portal(){
   app.innerHTML='<div class="pt">'+head('Portal Logística Inversa',`<span class="tag">${sessionStorage.bod}</span><button class="ghost" onclick="salir()">Salir</button>`)+'<main id="m"><p class="mut">Cargando…</p></main></div>';
   const r=await rpc('bod_solicitudes',{});if(r.error)return $('#m').innerHTML='<div class="card">No se pudo cargar: '+e(r.error.message)+'</div>';
   const k=s=>s.estado!='abierta'?2:s.procesado_at?1:0;S=r.data.sort((a,b)=>k(a)-k(b));const p=S.filter(s=>k(s)==0).length;
-  $('#m').innerHTML=`<div class="wel"><h2>👋 Bienvenido, Bodega ${sessionStorage.bod}</h2><p>Portal Logística Inversa · ${p?`Tienes ${p} solicitud(es) pendiente(s)`:'Estás al día 🎉'}${S.some(s=>s.estado!='abierta')?' · Las solicitudes cerradas se ocultan solas en 2 días':''}</p></div>`+(S.length?S.map(card).join(''):'<p class="mut">No hay solicitudes activas por ahora.</p>');
+  $('#m').innerHTML=`<div class="wel"><h2>👋 ${saludo()}, Bodega ${sessionStorage.bod}</h2><p>Bienvenido al Portal Logística Inversa · ${p?`Tienes ${p} solicitud(es) pendiente(s)`:'Estás al día 🎉'}${S.some(s=>s.estado!='abierta')?' · Las solicitudes cerradas se ocultan solas en 2 días':''}</p></div>`+(S.length?S.map(card).join(''):'<p class="mut">No hay solicitudes activas por ahora.</p>');
 }
 const fx=d=>d?new Date(d+'T00:00').toLocaleDateString('es-BO',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}).toUpperCase():'';
 const fc=d=>new Date(d+'T00:00').toLocaleDateString('es-BO',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}).toUpperCase();
-const GR=['B3','B5','B8'],gOf=b=>String(b||'').slice(0,2).toUpperCase();
+const GR=['B3','B5','B8'],CIU={B3:'La Paz',B5:'Oruro',B8:'Cobija'},gOf=b=>String(b||'').slice(0,2).toUpperCase();
 const rl=(d,h)=>h&&h!=d?`DEL ${fc(d)} AL ${fc(h)}`:fx(d),rt=(d,h)=>h&&h!=d?`${fd(d)} al ${fd(h)}`:fd(d);
 const gruposR=s=>{const g=s.recojo_grupos&&typeof s.recojo_grupos=='object'?s.recojo_grupos:{};return Object.keys(g).filter(k=>g[k]&&g[k].desde).sort().map(k=>[k,g[k]])};
-function recojoTxt(s,bod){const G=gruposR(s);if(G.length){if(bod){const x=G.find(([k])=>k==gOf(bod));return x?rt(x[1].desde,x[1].hasta):''}return G.map(([k,v])=>`${k}xx: ${rt(v.desde,v.hasta)}`).join(' · ')}return s.recojo_desde?rt(s.recojo_desde,s.recojo_hasta):''}
+function recojoTxt(s,bod){const G=gruposR(s);if(G.length){if(bod){const x=G.find(([k])=>k==gOf(bod));return x?rt(x[1].desde,x[1].hasta):''}return G.map(([k,v])=>`${CIU[k]||k}: ${rt(v.desde,v.hasta)}`).join(' · ')}return s.recojo_desde?rt(s.recojo_desde,s.recojo_hasta):''}
 function recojo(s){const bod=location.hash=='#admin'?null:sessionStorage.bod,G=gruposR(s);let t='';
-  if(G.length){if(bod){const x=G.find(([k])=>k==gOf(bod));t=x?rl(x[1].desde,x[1].hasta):''}else t=G.map(([k,v])=>`${k}xx: ${rl(v.desde,v.hasta)}`).join('<br>')}else if(s.recojo_desde)t=rl(s.recojo_desde,s.recojo_hasta);
+  if(G.length){if(bod){const x=G.find(([k])=>k==gOf(bod));t=x?rl(x[1].desde,x[1].hasta):''}else t=G.map(([k,v])=>`${(CIU[k]||k).toUpperCase()}: ${rl(v.desde,v.hasta)}`).join('<br>')}else if(s.recojo_desde)t=rl(s.recojo_desde,s.recojo_hasta);
   return t?`<tr class="g"><th>📅 FECHA DE RECOJO:</th><td>${t}</td></tr>`:''}
 const hoyL=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
 const fd=d=>d?d.split('-').reverse().join('/'):'';
@@ -147,7 +152,27 @@ function datos(s){
   return `<table class="dr">${prRows(s)}
   ${lvRow(s)}${r('PROVEEDOR:',s.proveedor)}${r('MOTIVO:',s.motivo)}${r('BODEGAS DESTINO:',s.destino)}${r('PLAZO PARA PROCESAR:',fx(s.plazo))}${recojo(s)}${r('RÓTULO:',s.rotulo)}</table>`;
 }
+const saludo=()=>{const h=+new Intl.DateTimeFormat('en-US',{hour:'numeric',hourCycle:'h23',timeZone:'America/La_Paz'}).format(new Date());return h>=5&&h<12?'Buenos días':h>=12&&h<19?'Buenas tardes':'Buenas noches'};
+const U=v=>e(String(v||'').toUpperCase()).replace(/\n/g,'<br>'),mkc=v=>`<mark>${U(v)}</mark>`;
+function regH(c,bod){const C=c.ciudades&&typeof c.ciudades=='object'?c.ciudades:{},ks=GR.filter(g=>C[g]);
+  if(!ks.length)return `<p><u>Regionales:</u> ${mkc(c.regionales)}</p>`;
+  if(bod){const t=C[gOf(bod)]||c.regionales;return t?`<p><u>Regionales:</u> ${mkc(t)}</p>`:''}
+  return ks.map(g=>`<p><u>Regionales · ${CIU[g]}:</u> ${mkc(C[g])}</p>`).join('')}
+function comuHTML(c,bod){c=c||{};const L=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean),prov=L(c.proveedores),ext=L(c.extras);
+  return `<div class="paper"><p>${saludo()}, Sucursales.</p><p>Estas son las fechas para las ${mkc(c.asunto)}</p>${regH(c,bod)}
+<p class="it">(Hacer seguimiento a sus traspasos, pasar correo confirmando el envío y confirmar entrega en destino)</p><p><i>Nota:</i></p><ul>
+<li>Revisar Políticas de Devolución en LEGADOS, si no está correcto reportarlo por correo.</li>
+<li>Cumplir los tiempos establecidos para la emisión de sus traspasos, ${mkc(c.nota)}</li>
+<li>Rotular y enumerar las cajas de manera correcta, para evitar confusiones o pérdidas. (Productos de farmacia o Productos de Salas).</li>
+<li>Proteger los productos para que lleguen a Logística Inversa sin daños, recuerden que es para Devolución a Proveedor.</li>
+${prov.length?`<li>Para su conocimiento los siguientes proveedores sí aceptan picados o tijereados, de los cuales pueden enviarnos conforme a la política mes a mes:<ul>${prov.map(x=>`<li>${e(x)}</li>`).join('')}</ul></li>`:''}
+<li>No enviar los productos que se solicitó como repliegue por cierre de gestión.</li>${ext.map(x=>`<li>${e(x)}</li>`).join('')}</ul></div>`}
+function cardCom(s){const ok=!!s.procesado_at,cl=s.estado=='cerrada';
+  return `<div class="card ${cl&&!ok?'cl':ok?'ok':'pend'}"><h3>📢 ${e(s.titulo)} <span class="tag st ${ok?'ok':''}">${ok?'✅ Enterado':cl?'🔒 Cerrado':'Pendiente'}</span></h3>${comuHTML(s.contenido,sessionStorage.bod)}
+  <div class="row" style="margin-top:12px">${ok?`<span class="mut">Enterado el ${fh(s.procesado_at)}</span>`:cl?'<span class="mut">🔒 Comunicado cerrado</span>':`<button onclick="enterado('${s.id}')">✅ Enterado</button>`}</div></div>`}
+async function enterado(id){if(!confirm('¿Confirmas que leíste este comunicado? Quedará registrado.'))return;const r=await rpc('bod_enterado',{p_sol:id});r.error?alert(r.error.message):portal()}
 function card(s){
+  if(s.tipo=='comunicado')return cardCom(s);
   const info=s.tipo=='informativa',ok=!!(s.procesado_at||(info&&s.visto_at)),cl=s.estado=='cerrada';
   const acc=info?(ok?`<span class="mut">Procesado el ${fh(s.procesado_at||s.visto_at)}${s.respuesta?`<br>“${e(s.respuesta)}”`:''}</span>`:`<div style="flex:1;min-width:240px"><label class="mut">Escribe el detalle del procesamiento (quién lo procesó, observaciones…)</label><input id="rp_${s.id}" placeholder="Ej.: Procesado por Juan, 3 cajas apartadas"><button onclick="proc('${s.id}')">✅ OK, procesado</button></div>`)
     :(ok?`<span class="mut">${s.sin_existencias?'Sin existencias':'Enviado'} el ${fh(s.procesado_at)}</span>`:`<button onclick="fill('${s.id}')">Llenar información</button>`);
@@ -189,16 +214,16 @@ async function send(id,empty){
 }
 
 /* ================= PANEL ADMIN (#admin) ================= */
-const VER='19-nov · recojo por grupo B3/B5/B8';
+const VER='21-nov · comunicados por ciudad + saludo';
 const act=k=>document.querySelectorAll('.nv').forEach(b=>b.classList.toggle('on',b.dataset.k==k));
-function go(k){({nueva,lista,dash,oper,contactos,accesos})[k]()}
+function go(k){({nueva,lista,com:comunicados,dash,oper,contactos,accesos})[k]()}
 async function admin(){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){app.innerHTML=hero(`<h3>Acceso administrador / operador</h3><input id="em" placeholder="Correo"><input id="pw" type="password" placeholder="Contraseña" onkeydown="event.key=='Enter'&&login()"><button onclick="login()">Ingresar</button>`,'Panel de control: solicitudes, seguimiento por bodega y recepción.');return tilt()}
   const em=session.user.email||'';
   app.innerHTML=`<div class="ad"><aside class="sd"><div class="sd-logo"><img src="icon.jpg" alt=""><b>NEXOCORP</b></div>
   <div class="sd-user"><div class="av">${e(em.slice(0,2).toUpperCase())}</div><span>${e(em)}</span><small>Administrador / Operador</small></div>
-  <nav>${[['nueva','✚','Nueva solicitud'],['lista','📋','Solicitudes'],['dash','📊','Dashboard'],['oper','📦','Operador'],['contactos','📱','Contactos'],['accesos','🔑','Accesos bodega']].map(([k,i,t])=>`<button class="nv" data-k="${k}" onclick="go('${k}')"><span>${i}</span>${t}</button>`).join('')}</nav>
+  <nav>${[['nueva','✚','Nueva solicitud'],['lista','📋','Solicitudes'],['com','📢','Comunicados DEV'],['dash','📊','Dashboard'],['oper','📦','Operador'],['contactos','📱','Contactos'],['accesos','🔑','Accesos bodega']].map(([k,i,t])=>`<button class="nv" data-k="${k}" onclick="go('${k}')"><span>${i}</span>${t}</button>`).join('')}</nav>
   <button class="nv out" onclick="sb.auth.signOut().then(admin)"><span>⎋</span>Salir</button><small style="text-align:center;opacity:.65;font-size:11px">Versión ${VER}</small></aside><section class="ad-main"><div id="m"></div></section></div>`;
   dash();
 }
@@ -226,7 +251,7 @@ let DS=[],DB=[],DR=[];
 async function dash(){act('dash');
   $('#m').innerHTML='<p class="mut">Cargando…</p>';
   await sb.rpc('cerrar_vencidas');
-  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,tipo,estado,plazo,recojo_desde,recojo_hasta,recojo_grupos').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,tipo,estado,plazo,recojo_desde,recojo_hasta,recojo_grupos').neq('tipo','comunicado').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
   if(a.error||b.error)return $('#m').innerHTML='<div class="card">'+e((a.error||b.error).message)+'</div>';
   DS=a.data;DB=b.data;
   $('#m').innerHTML=`<div class="row"><select id="fs" onchange="pintar()" style="max-width:340px"><option value="">Todas las solicitudes abiertas</option><option value="*">Todas, incluidas las cerradas</option>${DS.map(s=>`<option value="${s.id}">${e(s.titulo)}${s.estado=='cerrada'?' (cerrada)':''}</option>`).join('')}</select>
@@ -280,7 +305,7 @@ async function oper(){act('oper');
   OPEN=[...document.querySelectorAll('tr.cl')].filter(t=>!t.nextElementSibling.hidden).map(t=>t.dataset.b);const prev=$('#os')?.value||'';
   $('#m').innerHTML='<p class="mut">Cargando…</p>';
   await sb.rpc('cerrar_vencidas');
-  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,estado,tipo').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,estado,tipo').neq('tipo','comunicado').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
   if(a.error||b.error)return $('#m').innerHTML='<div class="card">'+e((a.error||b.error).message)+'<br>¿Ya ejecutaste migracion_3_recojo_recibido.sql?</div>';
   OS=a.data;OB=b.data;
   $('#m').innerHTML=`<h2>Dashboard del operador · recepción</h2><p class="mut">Marca como recibido lo que cada bodega ya envió (con llenado) o ya vio (solo información). Mide tu avance en ambos tipos.</p>
@@ -334,9 +359,9 @@ function nueva(){act('nueva');
   <div class="g2"><input id="mo" placeholder="Motivo (ej. SOLICITUD)"><input id="ro" placeholder="Rótulo"></div>
   <input id="de" placeholder="Bodegas destino / a dónde enviar">
   <div class="g2"><div><label class="mut">Plazo para procesar</label><input id="pz" type="date"></div><div></div></div>
-  <label class="sw"><input type="checkbox" id="rgc" onchange="$('#rg1').hidden=this.checked;$('#rg3').hidden=!this.checked"> Fechas de recojo distintas por grupo de bodegas (B3xx, B5xx, B8xx)</label>
+  <label class="sw"><input type="checkbox" id="rgc" onchange="$('#rg1').hidden=this.checked;$('#rg3').hidden=!this.checked"> Fechas de recojo distintas por ciudad (La Paz, Oruro, Cobija)</label>
   <div id="rg1" class="g2"><div><label class="mut">📅 Recojo: desde</label><input id="rd" type="date"></div><div><label class="mut">Recojo: hasta (vacío = un solo día)</label><input id="rh" type="date"></div></div>
-  <div id="rg3" hidden>${GR.map(g=>`<div class="g2"><div><label class="mut">📅 Recojo ${g}xx: desde</label><input id="gd_${g}" type="date"></div><div><label class="mut">Recojo ${g}xx: hasta (vacío = un solo día)</label><input id="gh_${g}" type="date"></div></div>`).join('')}</div>
+  <div id="rg3" hidden>${GR.map(g=>`<div class="g2"><div><label class="mut">📅 Recojo ${CIU[g]}: desde</label><input id="gd_${g}" type="date"></div><div><label class="mut">Recojo ${CIU[g]}: hasta (vacío = un solo día)</label><input id="gh_${g}" type="date"></div></div>`).join('')}</div>
   <input id="d" placeholder="Instrucciones adicionales (opcional)">
   <label class="mut">Documento adjunto (opcional)</label><input id="f" type="file">
   <label class="sw"><input type="checkbox" id="ca" onchange="$('#cb').hidden=!this.checked;if(this.checked&&!$('#lt').children.length)addLote()"> Aplicar condición de lote y/o fecha (si no, se muestra TODO EL STOCK)</label>
@@ -354,8 +379,8 @@ async function crear(){
   if($('#rh').value&&!$('#rd').value)return alert('Indica la fecha de recojo "desde"');
   if($('#rh').value&&$('#rh').value<$('#rd').value)return alert('El recojo "hasta" no puede ser antes del "desde"');
   const rgOn=$('#rgc').checked,gr={};
-  if(rgOn){for(const g of GR){const d=$('#gd_'+g).value,h=$('#gh_'+g).value;if(h&&!d)return alert(`Indica el recojo "desde" de ${g}xx`);if(h&&h<d)return alert(`En ${g}xx el "hasta" no puede ser antes del "desde"`);if(d)gr[g]={desde:d,hasta:h||null}}
-    if(!Object.keys(gr).length)return alert('Indica la fecha de recojo de al menos un grupo, o desmarca la opción')}
+  if(rgOn){for(const g of GR){const d=$('#gd_'+g).value,h=$('#gh_'+g).value;if(h&&!d)return alert(`Indica el recojo "desde" de ${CIU[g]}`);if(h&&h<d)return alert(`En ${CIU[g]} el "hasta" no puede ser antes del "desde"`);if(d)gr[g]={desde:d,hasta:h||null}}
+    if(!Object.keys(gr).length)return alert('Indica la fecha de recojo de al menos una ciudad, o desmarca la opción')}
   let url=null;const fl=$('#f').files[0];
   if(fl){const p=Date.now()+'_'+fl.name.replace(/[^\w.]/g,'_'),u=await sb.storage.from('docs').upload(p,fl);if(u.error)return alert(u.error.message);url=sb.storage.from('docs').getPublicUrl(p).data.publicUrl}
   const ca=$('#ca').checked,v=id=>$(id).value.trim()||null,pr=[...document.querySelectorAll('.pr')].map(r=>({codigo:r.querySelector('.pc').value.trim()||null,producto:r.querySelector('.pd').value.trim()||null})).filter(x=>x.codigo||x.producto);
@@ -369,7 +394,7 @@ async function crear(){
 }
 async function lista(){act('lista');
   await sb.rpc('cerrar_vencidas');
-  const[a,b]=await Promise.all([sb.from('solicitudes').select('*').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('*').neq('tipo','comunicado').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
   $('#m').innerHTML=a.data.map(s=>{const info=s.tipo=='informativa',x=b.data.filter(y=>y.solicitud_id==s.id),p=x.filter(y=>y.procesado_at).length,v=x.filter(y=>y.visto_at&&!y.procesado_at).length,n=x.length||1;
   return `<div class="card"><h3>${e(s.titulo)} <span class="tag">${s.estado}</span> <span class="tag">${info?'Solo información':'Con llenado'}</span></h3>${datos(s)}
   <div class="sb"><i class="p" style="width:${p/n*100}%"></i><i class="v" style="width:${v/n*100}%"></i></div>
@@ -418,6 +443,53 @@ function sg(f){
   ${info?'':`<h3>Datos enviados · ${R.length} filas</h3><div class="tw"><table><thead><tr>${COL.map(c=>`<th>${c.replace('_',' ').toUpperCase()}</th>`).join('')}</tr></thead><tbody>${R.map(x=>`<tr>${COL.map(c=>`<td style="padding:8px">${e(x[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}`;
 }
 
+/* ---- Comunicados DEV ---- */
+const getCom=()=>{const c={asunto:$('#cm_asunto').value.trim(),regionales:$('#cm_reg').value.trim(),nota:$('#cm_nota').value.trim(),proveedores:$('#cm_prov').value.trim(),extras:$('#cm_ext').value.trim()};
+  if($('#cm_pc')&&$('#cm_pc').checked){c.ciudades={};GR.forEach(g=>{const t=$('#cm_r_'+g).value.trim();if(t)c.ciudades[g]=t})}return c};
+const msgReg=(a,b)=>`Desde ${fd(a)} el sistema está habilitado para procesar traspasos para Devolución a Proveedor hasta el ${fd(b)}. Fuera del plazo establecido el sistema se bloqueará.`;
+function comuAutoC(g,q){const a=$('#cm_d1_'+g).value,b=$('#cm_d2_'+g).value;if(!a||!b)return q?0:alert('Elige las dos fechas de '+CIU[g]);$('#cm_r_'+g).value=msgReg(a,b);comuPrev()}
+function comuCiudad(on){$('#cm_u').hidden=on;$('#cm_c').hidden=!on;
+  if(on)GR.forEach(g=>{if(!$('#cm_d1_'+g).value)$('#cm_d1_'+g).value=$('#cm_d1').value;if(!$('#cm_d2_'+g).value)$('#cm_d2_'+g).value=$('#cm_d2').value;if(!$('#cm_r_'+g).value)comuAutoC(g,1)});comuPrev()}
+const comuPrev=()=>{$('#cp').innerHTML=comuHTML(getCom())};
+function comuAuto(q){const a=$('#cm_d1').value,b=$('#cm_d2').value;if(!a||!b)return q?0:alert('Elige las dos fechas');
+  $('#cm_reg').value=msgReg(a,b);comuPrev()}
+function comunicados(){act('com');
+  $('#m').innerHTML=`<h2>📢 Comunicados DEV</h2><p class="mut">Escribe solo los campos amarillos: salen resaltados y en MAYÚSCULAS. El resto del comunicado es fijo.</p>
+  <div class="com-g"><div class="card"><h3>Nuevo comunicado</h3>
+  <label class="mut">Asunto resaltado · "Estas son las fechas para las…"</label><input id="cm_asunto" value="devoluciones del mes de diciembre" oninput="comuPrev()">
+  <label class="sw"><input type="checkbox" id="cm_pc" onchange="comuCiudad(this.checked)"> Fechas y mensaje distintos por ciudad (La Paz, Oruro, Cobija)</label>
+  <div id="cm_u"><div class="g2"><div><label class="mut">Sistema habilitado desde</label><input id="cm_d1" type="date" value="2026-11-20"></div><div><label class="mut">Hasta</label><input id="cm_d2" type="date" value="2026-11-25"></div></div>
+  <button class="ghost" onclick="comuAuto()">✨ Autocompletar el mensaje con estas fechas</button>
+  <label class="mut" style="display:block;margin-top:10px">Mensaje para Regionales (resaltado)</label><textarea id="cm_reg" rows="4" oninput="comuPrev()"></textarea></div>
+  <div id="cm_c" hidden>${GR.map(g=>`<div style="border:1.5px solid #d5d8ee;border-radius:12px;padding:10px 12px;margin-bottom:10px"><b>${CIU[g]}</b><div class="g2"><div><label class="mut">Habilitado desde</label><input id="cm_d1_${g}" type="date"></div><div><label class="mut">Hasta</label><input id="cm_d2_${g}" type="date"></div></div><button class="ghost" onclick="comuAutoC('${g}')">✨ Autocompletar ${CIU[g]}</button><textarea id="cm_r_${g}" rows="3" oninput="comuPrev()" style="margin-top:8px"></textarea></div>`).join('')}</div>
+  <label class="mut">Nota resaltada · "Cumplir los tiempos establecidos…,"</label><input id="cm_nota" value="no se aceptarán traspasos generados fuera de fecha." oninput="comuPrev()">
+  <label class="mut">Proveedores que aceptan picados o tijereados (uno por línea, opcional)</label><textarea id="cm_prov" rows="3" oninput="comuPrev()"></textarea>
+  <label class="mut">Notas adicionales (una por línea, opcional)</label><textarea id="cm_ext" rows="2" oninput="comuPrev()"></textarea>
+  <h3>Bodegas destinatarias <button class="ghost" onclick="mk(1)">Todas</button> <button class="ghost" onclick="mk(0)">Ninguna</button></h3>
+  <div class="chips">${BOD.map(b=>`<label class="chip"><input type="checkbox" value="${b}">${b}</label>`).join('')}</div>
+  <button onclick="comuPublicar()">📢 Publicar comunicado</button></div>
+  <div><h3 style="margin-top:0">Vista previa · así lo ven las bodegas</h3><p class="mut" style="margin:-4px 0 8px;font-size:13px">El saludo (buenos días, buenas tardes o buenas noches) cambia solo según la hora en que entre cada bodega, y cada una ve el mensaje de su ciudad.</p><div id="cp"></div></div></div>
+  <h3>Comunicados publicados</h3><div id="cl"><p class="mut">Cargando…</p></div>`;
+  mk(1);comuAuto(1);comuLista();
+}
+async function comuPublicar(){const c=getCom(),bs=[...document.querySelectorAll('.chips input:checked')].map(i=>i.value);
+  if(!c.asunto)return alert('Completa el asunto');
+  if(c.ciudades){const f=[...new Set(bs.map(gOf))].filter(g=>!c.ciudades[g]);if(f.length)return alert('Falta el mensaje de: '+f.map(g=>CIU[g]||g).join(', '))}else if(!c.regionales)return alert('Completa el mensaje para Regionales');
+  if(!bs.length)return alert('Elige al menos una bodega');
+  if(!confirm(`¿Publicar el comunicado para ${bs.length} bodega(s)?`))return;
+  const{data,error}=await sb.from('solicitudes').insert({tipo:'comunicado',titulo:'COMUNICADO: '+c.asunto.toUpperCase(),contenido:c}).select().single();
+  if(error)return alert(error.message+'\n¿Ya ejecutaste migracion_11_comunicados.sql?');
+  const r=await sb.from('solicitud_bodegas').insert(bs.map(b=>({solicitud_id:data.id,bodega:b})));r.error?alert(r.error.message):comunicados()}
+async function comuLista(){
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('*').eq('tipo','comunicado').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  $('#cl').innerHTML=(a.data||[]).map(s=>{const x=b.data.filter(y=>y.solicitud_id==s.id),ok=x.filter(y=>y.procesado_at),fa=x.filter(y=>!y.procesado_at),pc=x.length?Math.round(ok.length/x.length*100):0,chp=(y,c)=>`<span class="chip ${c}" style="padding:3px 10px;cursor:default" title="${y.procesado_at?fh(y.procesado_at):'Pendiente'}">${y.bodega}</span>`;
+    return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${e(s.titulo)} <span class="tag">${s.estado}</span></h3><div class="row">${fa.length&&s.estado=='abierta'?`<button onclick="wa('${s.id}',1)">📲 Avisar (${fa.length})</button>`:''}${s.estado=='abierta'?`<button class="ghost" onclick="comuCerrar('${s.id}')">Cerrar</button>`:''}<button class="ghost" onclick="comuDel('${s.id}')">Eliminar</button></div></div>
+    <p class="mut" style="margin:6px 0">Publicado ${fh(s.created_at)}</p><div class="row"><div class="sb" style="flex:1"><i class="p" style="width:${pc}%"></i></div><b>${pc}%</b><span class="mut">${ok.length} de ${x.length} enterados</span></div>
+    <div class="chips">${ok.map(y=>chp(y,'ok')).join('')}${fa.map(y=>chp(y,'')).join('')}</div><details><summary>Ver comunicado</summary>${comuHTML(s.contenido)}</details></div>`}).join('')||'<p class="mut">Aún no hay comunicados publicados.</p>';
+}
+async function comuCerrar(id){if(!confirm('¿Cerrar este comunicado? Las bodegas lo seguirán viendo 2 días y luego desaparece de su portal.'))return;await sb.from('solicitudes').update({estado:'cerrada',cerrada_at:new Date().toISOString()}).eq('id',id);comunicados()}
+async function comuDel(id){if(!confirm('¿Eliminar este comunicado y su seguimiento? No se puede deshacer.'))return;if(await prot('admin_eliminar_solicitud',{p_id:id}))comunicados()}
+
 /* ---- Contactos y aviso por WhatsApp (manual, gratis) ---- */
 let CT={},WS=new Set(),WM={},WL=[];
 const tel=v=>{let d=String(v).replace(/\D/g,'');if(d.length==8)d='591'+d;return d};
@@ -436,7 +508,7 @@ async function wa(id,pend){
   if(c.error)return alert(c.error.message+'\n¿Ya ejecutaste migracion_5_whatsapp_lotes.sql?');
   WS=new Set();WM={b:b.data,c:c.data,s:s.data};const x=s.data,info=x.tipo=='informativa',link=location.origin+location.pathname,
    rj=x.recojo_desde?(x.recojo_hasta&&x.recojo_hasta!=x.recojo_desde?`del ${fd(x.recojo_desde)} al ${fd(x.recojo_hasta)}`:fd(x.recojo_desde)):'';
-  const msg=`📢 *LOGÍSTICA INVERSA* · Hola Bodega {bodega}\n\n*${x.titulo}*\n${info?'Solo información: ingresa al portal, llena el campo y confirma "Procesado".':'Debes llenar la información en el portal.'}${x.plazo?`\n⏰ Plazo para procesar: ${fd(x.plazo)}`:''}${recojoTxt(x)?'\n📅 Fecha de recojo: {recojo}':''}\n\n🔗 ${link}\nIngresa con tu código de bodega y tu clave.`;
+  const msg=`📢 *LOGÍSTICA INVERSA* · Hola Bodega {bodega}\n\n*${x.titulo}*\n${x.tipo=='comunicado'?'Nuevo comunicado: ingresa al portal, léelo y confirma "Enterado".':info?'Solo información: ingresa al portal, llena el campo y confirma "Procesado".':'Debes llenar la información en el portal.'}${x.plazo?`\n⏰ Plazo para procesar: ${fd(x.plazo)}`:''}${recojoTxt(x)?'\n📅 Fecha de recojo: {recojo}':''}\n\n🔗 ${link}\nIngresa con tu código de bodega y tu clave.`;
   $('#m').innerHTML=`<div class="row"><button class="ghost" onclick="lista()">← Volver</button></div><h2>📲 Avisar por WhatsApp · ${e(x.titulo)}</h2>
   <div class="card"><label class="mut">Mensaje (puedes editarlo; {bodega} se cambia por el código de cada bodega)</label><textarea id="wm" rows="9">${e(msg)}</textarea>
   <label class="sw"><input type="checkbox" id="wp" onchange="wlist()"> Solo bodegas pendientes (recordatorio)</label>
