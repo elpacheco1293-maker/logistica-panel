@@ -128,7 +128,13 @@ async function portal(){
 }
 const fx=d=>d?new Date(d+'T00:00').toLocaleDateString('es-BO',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}).toUpperCase():'';
 const fc=d=>new Date(d+'T00:00').toLocaleDateString('es-BO',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}).toUpperCase();
-function recojo(s){const d=s.recojo_desde,h=s.recojo_hasta;if(!d)return'';return `<tr class="g"><th>📅 FECHA DE RECOJO:</th><td>${h&&h!=d?`DEL ${fc(d)} AL ${fc(h)}`:fx(d)}</td></tr>`}
+const GR=['B3','B5','B8'],gOf=b=>String(b||'').slice(0,2).toUpperCase();
+const rl=(d,h)=>h&&h!=d?`DEL ${fc(d)} AL ${fc(h)}`:fx(d),rt=(d,h)=>h&&h!=d?`${fd(d)} al ${fd(h)}`:fd(d);
+const gruposR=s=>{const g=s.recojo_grupos&&typeof s.recojo_grupos=='object'?s.recojo_grupos:{};return Object.keys(g).filter(k=>g[k]&&g[k].desde).sort().map(k=>[k,g[k]])};
+function recojoTxt(s,bod){const G=gruposR(s);if(G.length){if(bod){const x=G.find(([k])=>k==gOf(bod));return x?rt(x[1].desde,x[1].hasta):''}return G.map(([k,v])=>`${k}xx: ${rt(v.desde,v.hasta)}`).join(' · ')}return s.recojo_desde?rt(s.recojo_desde,s.recojo_hasta):''}
+function recojo(s){const bod=location.hash=='#admin'?null:sessionStorage.bod,G=gruposR(s);let t='';
+  if(G.length){if(bod){const x=G.find(([k])=>k==gOf(bod));t=x?rl(x[1].desde,x[1].hasta):''}else t=G.map(([k,v])=>`${k}xx: ${rl(v.desde,v.hasta)}`).join('<br>')}else if(s.recojo_desde)t=rl(s.recojo_desde,s.recojo_hasta);
+  return t?`<tr class="g"><th>📅 FECHA DE RECOJO:</th><td>${t}</td></tr>`:''}
 const hoyL=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
 const fd=d=>d?d.split('-').reverse().join('/'):'';
 function lotes(s){const a=Array.isArray(s.cond_lotes)?s.cond_lotes:[];return a.length?a:(s.cond_activa&&(s.cond_lote||s.cond_fecha)?[{lote:s.cond_lote,fecha:s.cond_fecha}]:[])}
@@ -139,7 +145,7 @@ function datos(s){
   const r=(k,v,c='')=>v?`<tr><th>${k}</th><td class="${c}">${e(v)}</td></tr>`:'';
   
   return `<table class="dr">${prRows(s)}
-  ${lvRow(s)}${r('PROVEEDOR:',s.proveedor)}${r('MOTIVO:',s.motivo)}${r('BODEGAS DESTINO:',s.destino)}${recojo(s)}${r('PLAZO PARA PROCESAR:',fx(s.plazo))}${r('RÓTULO:',s.rotulo)}</table>`;
+  ${lvRow(s)}${r('PROVEEDOR:',s.proveedor)}${r('MOTIVO:',s.motivo)}${r('BODEGAS DESTINO:',s.destino)}${r('PLAZO PARA PROCESAR:',fx(s.plazo))}${recojo(s)}${r('RÓTULO:',s.rotulo)}</table>`;
 }
 function card(s){
   const info=s.tipo=='informativa',ok=!!(s.procesado_at||(info&&s.visto_at)),cl=s.estado=='cerrada';
@@ -183,7 +189,7 @@ async function send(id,empty){
 }
 
 /* ================= PANEL ADMIN (#admin) ================= */
-const VER='19-nov · menú lateral + dashboard por solicitud';
+const VER='19-nov · recojo por grupo B3/B5/B8';
 const act=k=>document.querySelectorAll('.nv').forEach(b=>b.classList.toggle('on',b.dataset.k==k));
 function go(k){({nueva,lista,dash,oper,contactos,accesos})[k]()}
 async function admin(){
@@ -220,7 +226,7 @@ let DS=[],DB=[],DR=[];
 async function dash(){act('dash');
   $('#m').innerHTML='<p class="mut">Cargando…</p>';
   await sb.rpc('cerrar_vencidas');
-  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,tipo,estado,plazo,recojo_desde,recojo_hasta').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,tipo,estado,plazo,recojo_desde,recojo_hasta,recojo_grupos').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
   if(a.error||b.error)return $('#m').innerHTML='<div class="card">'+e((a.error||b.error).message)+'</div>';
   DS=a.data;DB=b.data;
   $('#m').innerHTML=`<div class="row"><select id="fs" onchange="pintar()" style="max-width:340px"><option value="">Todas las solicitudes abiertas</option><option value="*">Todas, incluidas las cerradas</option>${DS.map(s=>`<option value="${s.id}">${e(s.titulo)}${s.estado=='cerrada'?' (cerrada)':''}</option>`).join('')}</select>
@@ -245,7 +251,7 @@ function pintarSol(L){
   const hoy=hoyL(),ch=x=>`<span class="chip ${x.procesado_at?'ok':x.visto_at?'vis':''}" style="padding:3px 10px;cursor:default">${x.bodega}${x.recibido_at?' 📬':''}</span>`;
   $('#db').innerHTML=vt()+(L.map(s=>{
     const info=s.tipo=='informativa',b=DB.filter(x=>x.solicitud_id==s.id),n=b.length||1,ok=b.filter(x=>x.procesado_at),fa=b.filter(x=>!x.procesado_at),rc=ok.filter(x=>x.recibido_at),por=ok.length-rc.length,venc=s.plazo&&s.plazo<hoy&&fa.length;
-    return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h3 style="margin:0">${e(s.titulo)}</h3><div class="row" style="gap:6px;margin-top:6px"><span class="tag">${info?'Solo información':'Con llenado'}</span><span class="tag">${s.estado}</span>${s.plazo?`<span class="tag" style="${venc?'background:#fde8e6;color:#c0392b':''}">⏰ Plazo ${fd(s.plazo)}${venc?' · vencido':''}</span>`:''}${s.recojo_desde?`<span class="tag" style="background:#e3f6ee;color:var(--ok)">📅 Recojo ${fd(s.recojo_desde)}${s.recojo_hasta&&s.recojo_hasta!=s.recojo_desde?' al '+fd(s.recojo_hasta):''}</span>`:''}</div></div>
+    return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h3 style="margin:0">${e(s.titulo)}</h3><div class="row" style="gap:6px;margin-top:6px"><span class="tag">${info?'Solo información':'Con llenado'}</span><span class="tag">${s.estado}</span>${s.plazo?`<span class="tag" style="${venc?'background:#fde8e6;color:#c0392b':''}">⏰ Plazo ${fd(s.plazo)}${venc?' · vencido':''}</span>`:''}${recojoTxt(s)?`<span class="tag" style="background:#e3f6ee;color:var(--ok)">📅 Recojo ${recojoTxt(s)}</span>`:''}</div></div>
     <div class="row"><button class="ghost" onclick="ver('${s.id}')">Seguimiento</button>${fa.length&&s.estado=='abierta'?`<button onclick="wa('${s.id}',1)">📲 Avisar (${fa.length})</button>`:''}</div></div>
     <div class="sol-g"><div class="rgs">${ring(Math.round(ok.length/n*100),'#5046E5',info?'Procesado':'Registro',`${ok.length} de ${b.length}`)}${ring(Math.round(rc.length/n*100),'#1f9d6b','Recibido',`${rc.length} de ${b.length} · ${por} por recibir`)}${ring(Math.round(fa.length/n*100),'#f0b429','Faltan',`${fa.length} bodegas`)}</div>
     <div><b style="font-size:14px">Respuestas por día</b>${grafica(dias(b))}</div></div>
@@ -328,7 +334,9 @@ function nueva(){act('nueva');
   <div class="g2"><input id="mo" placeholder="Motivo (ej. SOLICITUD)"><input id="ro" placeholder="Rótulo"></div>
   <input id="de" placeholder="Bodegas destino / a dónde enviar">
   <div class="g2"><div><label class="mut">Plazo para procesar</label><input id="pz" type="date"></div><div></div></div>
-  <div class="g2"><div><label class="mut">📅 Recojo: desde</label><input id="rd" type="date"></div><div><label class="mut">Recojo: hasta (vacío = un solo día)</label><input id="rh" type="date"></div></div>
+  <label class="sw"><input type="checkbox" id="rgc" onchange="$('#rg1').hidden=this.checked;$('#rg3').hidden=!this.checked"> Fechas de recojo distintas por grupo de bodegas (B3xx, B5xx, B8xx)</label>
+  <div id="rg1" class="g2"><div><label class="mut">📅 Recojo: desde</label><input id="rd" type="date"></div><div><label class="mut">Recojo: hasta (vacío = un solo día)</label><input id="rh" type="date"></div></div>
+  <div id="rg3" hidden>${GR.map(g=>`<div class="g2"><div><label class="mut">📅 Recojo ${g}xx: desde</label><input id="gd_${g}" type="date"></div><div><label class="mut">Recojo ${g}xx: hasta (vacío = un solo día)</label><input id="gh_${g}" type="date"></div></div>`).join('')}</div>
   <input id="d" placeholder="Instrucciones adicionales (opcional)">
   <label class="mut">Documento adjunto (opcional)</label><input id="f" type="file">
   <label class="sw"><input type="checkbox" id="ca" onchange="$('#cb').hidden=!this.checked;if(this.checked&&!$('#lt').children.length)addLote()"> Aplicar condición de lote y/o fecha (si no, se muestra TODO EL STOCK)</label>
@@ -345,13 +353,16 @@ async function crear(){
   if(!$('#t').value.trim()||!bs.length)return alert('Falta el título o elegir bodegas');
   if($('#rh').value&&!$('#rd').value)return alert('Indica la fecha de recojo "desde"');
   if($('#rh').value&&$('#rh').value<$('#rd').value)return alert('El recojo "hasta" no puede ser antes del "desde"');
+  const rgOn=$('#rgc').checked,gr={};
+  if(rgOn){for(const g of GR){const d=$('#gd_'+g).value,h=$('#gh_'+g).value;if(h&&!d)return alert(`Indica el recojo "desde" de ${g}xx`);if(h&&h<d)return alert(`En ${g}xx el "hasta" no puede ser antes del "desde"`);if(d)gr[g]={desde:d,hasta:h||null}}
+    if(!Object.keys(gr).length)return alert('Indica la fecha de recojo de al menos un grupo, o desmarca la opción')}
   let url=null;const fl=$('#f').files[0];
   if(fl){const p=Date.now()+'_'+fl.name.replace(/[^\w.]/g,'_'),u=await sb.storage.from('docs').upload(p,fl);if(u.error)return alert(u.error.message);url=sb.storage.from('docs').getPublicUrl(p).data.publicUrl}
   const ca=$('#ca').checked,v=id=>$(id).value.trim()||null,pr=[...document.querySelectorAll('.pr')].map(r=>({codigo:r.querySelector('.pc').value.trim()||null,producto:r.querySelector('.pd').value.trim()||null})).filter(x=>x.codigo||x.producto);
   let lots=ca?[...document.querySelectorAll('.lr')].map(r=>({lote:r.querySelector('.ll').value.trim()||null,fecha:r.querySelector('.lf').value||$('#cf').value||null})).filter(x=>x.lote||x.fecha):[];
   if(ca&&!lots.length&&$('#cf').value)lots=[{lote:null,fecha:$('#cf').value}];
   if(ca&&!lots.length)return alert('Agrega al menos un lote o una fecha, o desmarca la condición');
-  const{data,error}=await sb.from('solicitudes').insert({tipo:$('#tp').value,titulo:v('#t'),productos:pr,producto:pr[0]?.producto||null,codigo:pr[0]?.codigo||null,proveedor:v('#pv'),motivo:v('#mo'),rotulo:v('#ro'),destino:v('#de'),plazo:v('#pz'),recojo_desde:v('#rd'),recojo_hasta:v('#rh'),descripcion:v('#d'),doc_url:url,cond_activa:ca,cond_lotes:lots}).select().single();
+  const{data,error}=await sb.from('solicitudes').insert({tipo:$('#tp').value,titulo:v('#t'),productos:pr,producto:pr[0]?.producto||null,codigo:pr[0]?.codigo||null,proveedor:v('#pv'),motivo:v('#mo'),rotulo:v('#ro'),destino:v('#de'),plazo:v('#pz'),recojo_desde:rgOn?null:v('#rd'),recojo_hasta:rgOn?null:v('#rh'),recojo_grupos:gr,descripcion:v('#d'),doc_url:url,cond_activa:ca,cond_lotes:lots}).select().single();
   if(error)return alert(error.message);
   const r=await sb.from('solicitud_bodegas').insert(bs.map(b=>({solicitud_id:data.id,bodega:b})));
   r.error?alert(r.error.message):lista();
@@ -423,9 +434,9 @@ async function delTel(id){if(confirm('¿Quitar este número?')&&await prot('admi
 async function wa(id,pend){
   const[s,b,c]=await Promise.all([sb.from('solicitudes').select('*').eq('id',id).single(),sb.from('solicitud_bodegas').select('*').eq('solicitud_id',id).order('bodega'),sb.from('bodega_contactos').select('*')]);
   if(c.error)return alert(c.error.message+'\n¿Ya ejecutaste migracion_5_whatsapp_lotes.sql?');
-  WS=new Set();WM={b:b.data,c:c.data};const x=s.data,info=x.tipo=='informativa',link=location.origin+location.pathname,
+  WS=new Set();WM={b:b.data,c:c.data,s:s.data};const x=s.data,info=x.tipo=='informativa',link=location.origin+location.pathname,
    rj=x.recojo_desde?(x.recojo_hasta&&x.recojo_hasta!=x.recojo_desde?`del ${fd(x.recojo_desde)} al ${fd(x.recojo_hasta)}`:fd(x.recojo_desde)):'';
-  const msg=`📢 *LOGÍSTICA INVERSA* · Hola Bodega {bodega}\n\n*${x.titulo}*\n${info?'Solo información: ingresa al portal, llena el campo y confirma "Procesado".':'Debes llenar la información en el portal.'}${x.plazo?`\n⏰ Plazo para procesar: ${fd(x.plazo)}`:''}${rj?`\n📅 Fecha de recojo: ${rj}`:''}\n\n🔗 ${link}\nIngresa con tu código de bodega y tu clave.`;
+  const msg=`📢 *LOGÍSTICA INVERSA* · Hola Bodega {bodega}\n\n*${x.titulo}*\n${info?'Solo información: ingresa al portal, llena el campo y confirma "Procesado".':'Debes llenar la información en el portal.'}${x.plazo?`\n⏰ Plazo para procesar: ${fd(x.plazo)}`:''}${recojoTxt(x)?'\n📅 Fecha de recojo: {recojo}':''}\n\n🔗 ${link}\nIngresa con tu código de bodega y tu clave.`;
   $('#m').innerHTML=`<div class="row"><button class="ghost" onclick="lista()">← Volver</button></div><h2>📲 Avisar por WhatsApp · ${e(x.titulo)}</h2>
   <div class="card"><label class="mut">Mensaje (puedes editarlo; {bodega} se cambia por el código de cada bodega)</label><textarea id="wm" rows="9">${e(msg)}</textarea>
   <label class="sw"><input type="checkbox" id="wp" onchange="wlist()"> Solo bodegas pendientes (recordatorio)</label>
@@ -439,7 +450,7 @@ function wlist(){
   $('#wl').innerHTML=`<div class="tw"><table style="min-width:520px"><thead><tr><th>BODEGA</th><th>NÚMERO</th><th></th></tr></thead><tbody>${WL.map((w,i)=>`<tr><td style="padding:8px"><b>${w.b}</b></td><td>${w.t?'+'+w.t:'⚠️ sin número'}</td><td>${w.t?`<button class="ghost" onclick="wsend(${i})">${WS.has(w.b+w.t)?'✅ Abierto · reabrir':'💬 Enviar'}</button>`:''}</td></tr>`).join('')}</tbody></table></div>`;
   $('#wc').textContent=`${WL.filter(w=>w.t&&WS.has(w.b+w.t)).length} de ${WL.filter(w=>w.t).length} chats abiertos`;
 }
-function wsend(i){const w=WL[i],m=$('#wm').value.replace(/\{bodega\}/g,w.b);window.open(`https://wa.me/${w.t}?text=${encodeURIComponent(m)}`,'_blank');WS.add(w.b+w.t);wlist()}
+function wsend(i){const w=WL[i],m=$('#wm').value.replace(/\{bodega\}/g,w.b).replace(/\{recojo\}/g,recojoTxt(WM.s,w.b)||'por confirmar');window.open(`https://wa.me/${w.t}?text=${encodeURIComponent(m)}`,'_blank');WS.add(w.b+w.t);wlist()}
 function wnext(){const i=WL.findIndex(w=>w.t&&!WS.has(w.b+w.t));i<0?alert('Ya abriste todos los chats de la lista ✅'):wsend(i)}
 
 /* ---- Accesos de bodegas ---- */
