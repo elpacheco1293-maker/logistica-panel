@@ -71,7 +71,7 @@ button:hover{background:var(--p2)}button:disabled{opacity:.5;cursor:default}butt
 .sd-user span{display:block;font-weight:600;font-size:13px;word-break:break-all}.sd-user small{opacity:.75}
 .sd nav{display:flex;flex-direction:column;gap:4px;margin-top:8px}
 .nv{display:flex;align-items:center;gap:12px;width:100%;background:none;color:#fff;text-align:left;padding:11px 14px;border-radius:12px;font:500 15px Outfit,sans-serif}
-.nv span{width:22px;text-align:center}.nv:hover{background:rgba(255,255,255,.14)}.nv.on{background:rgba(255,255,255,.24);box-shadow:inset 3px 0 0 #fff;font-weight:700}.nv.out{margin-top:auto;background:rgba(255,255,255,.08)}
+.nv span{width:22px;display:grid;place-items:center}.nv svg{width:20px;height:20px}.nv.out:hover{background:rgba(255,99,99,.3)}.ghost.ic{display:inline-flex;align-items:center;gap:8px}.ghost.ic svg{width:17px;height:17px}.paper.sn{font:normal 15.5px/1.6 Calibri,Carlito,'Segoe UI',Arial,sans-serif}.paper.sn mark{text-decoration:none}.paper.sn ul{padding-left:30px}.sub-t{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}.nv:hover{background:rgba(255,255,255,.14)}.nv.on{background:rgba(255,255,255,.24);box-shadow:inset 3px 0 0 #fff;font-weight:700}.nv.out{margin-top:auto;background:rgba(255,255,255,.08)}
 .ad-main{padding:26px 30px;min-width:0}
 .rg{text-align:center}.rr{width:96px;height:96px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),#e6e8f8 0)}
 .rr:before{content:"";grid-area:1/1;width:72px;height:72px;border-radius:50%;background:#fff}.rr b{grid-area:1/1;font:700 21px Outfit,sans-serif;z-index:1}
@@ -112,7 +112,7 @@ function hero(form,sub){return `<div class="hz"><div class="hz-in"><div><div cla
 <div class="hz-login">${form}</div></div>
 <div class="sc"><div class="sc-in"><div class="orb o1"></div><div class="orb o2"></div><div class="tile"><div class="face"><img src="icon.jpg" alt=""></div><div class="face b"><img src="icon.jpg" alt=""></div></div>
 </div></div></div>
-<div class="hz-foot">Nexocorp · Logística Inversa · Uso interno · Versión ${VER}</div></div>`}
+<div class="hz-foot">Nexocorp · Logística Inversa · Uso interno</div></div>`}
 function tilt(){const sc=document.querySelector('.sc-in'),h=document.querySelector('.hz');if(!sc||!h)return;
   h.onmousemove=ev=>{sc.style.transform=`rotateY(${(ev.clientX/innerWidth-.5)*18}deg) rotateX(${-(ev.clientY/innerHeight-.5)*14}deg)`};h.onmouseleave=()=>{sc.style.transform=''}}
 
@@ -126,7 +126,7 @@ async function ingresar(){const b=$('#lb').value,c=$('#lc').value;if(!b||!c)retu
   sessionStorage.tk=data.token;sessionStorage.bod=data.bodega;portal()}
 async function portal(){
   if(!TK()){app.innerHTML=hero(`<h3>Ingreso de bodega</h3><select id="lb"><option value="">Elige tu bodega</option>${BOD.map(b=>`<option>${b}</option>`).join('')}</select><input id="lc" type="password" placeholder="Clave de tu bodega" onkeydown="event.key=='Enter'&&ingresar()"><button onclick="ingresar()">Ingresar</button><p class="mut">Tu usuario y clave inicial es el código de tu bodega. Si no puedes entrar, pide al administrador que la restablezca.</p>`,'Solicitudes, seguimiento y recepción de información entre las bodegas y logística.');return tilt()}
-  app.innerHTML='<div class="pt">'+head('Portal Logística Inversa',`<span class="tag">${sessionStorage.bod}</span><button class="ghost" onclick="salir()">Salir</button>`)+'<main id="m"><p class="mut">Cargando…</p></main></div>';
+  app.innerHTML='<div class="pt">'+head('Portal Logística Inversa',`<span class="tag">${sessionStorage.bod}</span><button class="ghost ic" onclick="salir()">${ico('out')} Salir</button>`)+'<main id="m"><p class="mut">Cargando…</p></main></div>';
   const r=await rpc('bod_solicitudes',{});if(r.error)return $('#m').innerHTML='<div class="card">No se pudo cargar: '+e(r.error.message)+'</div>';
   const k=s=>s.estado!='abierta'?2:s.procesado_at?1:0;S=r.data.sort((a,b)=>k(a)-k(b));const p=S.filter(s=>k(s)==0).length;
   $('#m').innerHTML=`<div class="wel"><h2>👋 ${saludo()}, Bodega ${sessionStorage.bod}</h2><p>Bienvenido al Portal Logística Inversa · ${p?`Tienes ${p} solicitud(es) pendiente(s)`:'Estás al día 🎉'}${S.some(s=>s.estado!='abierta')?' · Las solicitudes cerradas se ocultan solas en 2 días':''}</p></div>`+(S.length?S.map(card).join(''):'<p class="mut">No hay solicitudes activas por ahora.</p>');
@@ -158,7 +158,23 @@ function regH(c,bod){const C=c.ciudades&&typeof c.ciudades=='object'?c.ciudades:
   if(!ks.length)return `<p><u>Regionales:</u> ${mkc(c.regionales)}</p>`;
   if(bod){const t=C[gOf(bod)]||c.regionales;return t?`<p><u>Regionales:</u> ${mkc(t)}</p>`:''}
   return ks.map(g=>`<p><u>Regionales · ${CIU[g]}:</u> ${mkc(C[g])}</p>`).join('')}
-function comuHTML(c,bod){c=c||{};const L=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean),prov=L(c.proveedores),ext=L(c.extras);
+function bajaHTML(c){const fe=d=>d?fd(d):'__/__/____';
+  return `<div class="paper sn"><p>${saludo()}, sucursales:</p>
+<p>Favor tomar en cuenta las siguientes fechas para el proceso de <b>BAJAS correspondientes al mes de</b> ${mkc(c.mes)}.</p>
+<p><b>Fechas de emisión:</b></p><ul><li>Desde el <b>${fe(c.desde)}</b> hasta el <b>${fe(c.hasta)}</b>, deberán proceder con la emisión de traspasos por motivo de Bajas <b>(PV, DT, DS, RM y PVMP).</b></li></ul>
+<p><b>Lineamientos generales:</b></p><ul>
+<li>Cumplir estrictamente con los <b>plazos establecidos</b> para la emisión de traspasos; <mark>SE DESHABILITARÁ EL SISTEMA FUERA DEL PLAZO.</mark></li>
+<li>Entregar los traspasos al área de distribución en el plazo establecido.</li>
+<li>Rotular las cajas como ${mkc('“'+(c.rotulo||'')+'”')} y <b>enumerarlas correctamente</b>, para evitar confusiones o pérdidas.</li>
+<li>Proteger adecuadamente los productos para que lleguen a Logística Inversa sin daños.</li>
+<li>Cada transferencia debe contar con su <b>documentación firmada y sellada por la Regente y la jefa Zonal</b>.</li>
+<li>Toda transferencia procesada como <b>RM y DT</b> debe contar con la <mark>aprobación previa de Calidad del CEDIS;</mark> caso contrario, será revertida.</li></ul>
+<p><b>Tomar en cuenta:</b></p><ul>
+<li>Se habilitó un nuevo tipo de traspaso <b>PVMP – “Baja Destrucción Marca Propia”.</b></li>
+<li>Al generar la baja de productos de <b>marca propia,</b> se deberá utilizar este motivo <b>(PVMP).</b></li>
+<li>Si durante la generación de una transferencia <b>PV – Baja Destrucción</b> se identifica algún ítem correspondiente a <b>PVMP,</b> el traspaso deberá realizarse <b>por separado.</b></li></ul>
+<p>Agradecemos su colaboración y el cumplimiento de lo indicado.</p><p>Saludos.</p></div>`}
+function comuHTML(c,bod){c=c||{};if(c.plantilla=='baja')return bajaHTML(c);const L=t=>String(t||'').split('\n').map(x=>x.trim()).filter(Boolean),prov=L(c.proveedores),ext=L(c.extras);
   return `<div class="paper"><p>${saludo()}, Sucursales.</p><p>Estas son las fechas para las ${mkc(c.asunto)}</p>${regH(c,bod)}
 <p class="it">(Hacer seguimiento a sus traspasos, pasar correo confirmando el envío y confirmar entrega en destino)</p><p><i>Nota:</i></p><ul>
 <li>Revisar Políticas de Devolución en LEGADOS, si no está correcto reportarlo por correo.</li>
@@ -214,7 +230,10 @@ async function send(id,empty){
 }
 
 /* ================= PANEL ADMIN (#admin) ================= */
-const VER='21-nov · comunicados por ciudad + saludo';
+const VER='21-nov · comunicados bajas + dashboard';
+const IC={plus:'<path d="M12 5v14M5 12h14"/>',mega:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',list:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/>',chart:'<path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/>',box:'<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',phone:'<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',key:'<path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>',out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'};
+const ico=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n]}</svg>`;
+const NAVI=[['nueva','plus','Nueva solicitud'],['com','mega','Comunicados DEV'],['lista','list','Solicitudes'],['dash','chart','Dashboard'],['oper','box','Operador'],['contactos','phone','Contactos'],['accesos','key','Accesos bodega']];
 const act=k=>document.querySelectorAll('.nv').forEach(b=>b.classList.toggle('on',b.dataset.k==k));
 function go(k){({nueva,lista,com:comunicados,dash,oper,contactos,accesos})[k]()}
 async function admin(){
@@ -223,8 +242,8 @@ async function admin(){
   const em=session.user.email||'';
   app.innerHTML=`<div class="ad"><aside class="sd"><div class="sd-logo"><img src="icon.jpg" alt=""><b>NEXOCORP</b></div>
   <div class="sd-user"><div class="av">${e(em.slice(0,2).toUpperCase())}</div><span>${e(em)}</span><small>Administrador / Operador</small></div>
-  <nav>${[['nueva','✚','Nueva solicitud'],['lista','📋','Solicitudes'],['com','📢','Comunicados DEV'],['dash','📊','Dashboard'],['oper','📦','Operador'],['contactos','📱','Contactos'],['accesos','🔑','Accesos bodega']].map(([k,i,t])=>`<button class="nv" data-k="${k}" onclick="go('${k}')"><span>${i}</span>${t}</button>`).join('')}</nav>
-  <button class="nv out" onclick="sb.auth.signOut().then(admin)"><span>⎋</span>Salir</button><small style="text-align:center;opacity:.65;font-size:11px">Versión ${VER}</small></aside><section class="ad-main"><div id="m"></div></section></div>`;
+  <nav>${NAVI.map(([k,i,t])=>`<button class="nv" data-k="${k}" onclick="go('${k}')"><span>${ico(i)}</span>${t}</button>`).join('')}</nav>
+  <button class="nv out" onclick="sb.auth.signOut().then(admin)"><span>${ico('out')}</span>Salir</button><small title="Versión ${VER}" style="text-align:center;opacity:.75;font-size:12px;letter-spacing:.04em">Nexocorp - Logística</small></aside><section class="ad-main"><div id="m"></div></section></div>`;
   dash();
 }
 async function login(){const{error}=await sb.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});error?alert(error.message):admin()}
@@ -251,11 +270,11 @@ let DS=[],DB=[],DR=[];
 async function dash(){act('dash');
   $('#m').innerHTML='<p class="mut">Cargando…</p>';
   await sb.rpc('cerrar_vencidas');
-  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,tipo,estado,plazo,recojo_desde,recojo_hasta,recojo_grupos').neq('tipo','comunicado').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
+  const[a,b]=await Promise.all([sb.from('solicitudes').select('id,titulo,tipo,estado,plazo,recojo_desde,recojo_hasta,recojo_grupos').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
   if(a.error||b.error)return $('#m').innerHTML='<div class="card">'+e((a.error||b.error).message)+'</div>';
   DS=a.data;DB=b.data;
   $('#m').innerHTML=`<div class="row"><select id="fs" onchange="pintar()" style="max-width:340px"><option value="">Todas las solicitudes abiertas</option><option value="*">Todas, incluidas las cerradas</option>${DS.map(s=>`<option value="${s.id}">${e(s.titulo)}${s.estado=='cerrada'?' (cerrada)':''}</option>`).join('')}</select>
-  <select id="ft" onchange="pintar()"><option value="">Ambos tipos</option><option value="informativa">Solo información</option><option value="llenado">Con llenado</option></select><button class="ghost" onclick="dl('avance_bodegas.csv',[['bodega','asignadas','vistas','procesadas','pendientes','vencidas','avance_%'],...DR.map(o=>[o.b,o.n,o.v+o.p,o.p,o.n-o.p-o.v,o.venc,o.pc])])">Exportar CSV</button></div><div id="db"></div>`;
+  <select id="ft" onchange="pintar()"><option value="">Todos los tipos</option><option value="informativa">Solo información</option><option value="llenado">Con llenado</option><option value="comunicado">Comunicados</option></select><button class="ghost" onclick="dl('avance_bodegas.csv',[['bodega','asignadas','vistas','procesadas','pendientes','vencidas','avance_%'],...DR.map(o=>[o.b,o.n,o.v+o.p,o.p,o.n-o.p-o.v,o.venc,o.pc])])">Exportar CSV</button></div><div id="db"></div>`;
   pintar();
 }
 let DV='sol';
@@ -265,22 +284,22 @@ function dias(b){const m={},k=d=>new Date(d).toLocaleDateString('en-CA'),add=(d,
   b.forEach(x=>{if(x.procesado_at)add(x.procesado_at,'r');if(x.recibido_at)add(x.recibido_at,'c')});
   const ks=Object.keys(m).sort();if(!ks.length)return[];const o=[],d=new Date(ks[0]+'T00:00'),f=new Date(ks[ks.length-1]+'T00:00');
   while(d<=f&&o.length<31){const q=d.toLocaleDateString('en-CA');o.push({d:q,...(m[q]||{r:0,c:0})});d.setDate(d.getDate()+1)}return o}
-function grafica(D){
+function grafica(D,com){
   if(!D.length)return '<p class="mut" style="margin:10px 0">Aún no hay respuestas para graficar.</p>';
   const W=Math.max(320,D.length*56),H=170,P=30,mx=Math.max(1,...D.flatMap(x=>[x.r,x.c])),sw=(W-P-6)/D.length,y=v=>H-26-(v/mx)*(H-52);let g='';
   [0,.5,1].forEach(t=>{const yy=y(mx*t);g+=`<line x1="${P}" x2="${W-6}" y1="${yy}" y2="${yy}" stroke="#e6e8f8"/><text x="${P-6}" y="${yy+4}" font-size="10" fill="#6b7099" text-anchor="end">${Math.round(mx*t)}</text>`});
   D.forEach((x,i)=>{const cx=P+sw*i+sw/2;
     g+=`<rect x="${cx-17}" y="${y(x.r)}" width="16" height="${H-26-y(x.r)}" rx="3" fill="#5046E5"><title>${x.r} bodegas respondieron</title></rect><rect x="${cx+1}" y="${y(x.c)}" width="16" height="${H-26-y(x.c)}" rx="3" fill="#1f9d6b"><title>${x.c} recibidas</title></rect><text x="${cx}" y="${H-8}" font-size="10" fill="#6b7099" text-anchor="middle">${x.d.slice(8)}/${x.d.slice(5,7)}</text>`});
-  return `<div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:none">${g}</svg></div><div class="row" style="font-size:13px;gap:16px"><span><i class="lg" style="background:#5046E5"></i>Respondieron</span><span><i class="lg" style="background:#1f9d6b"></i>Recibidas</span></div>`}
+  return `<div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="max-width:none">${g}</svg></div><div class="row" style="font-size:13px;gap:16px"><span><i class="lg" style="background:#5046E5"></i>${com?'Se enteraron':'Respondieron'}</span>${com?'':'<span><i class="lg" style="background:#1f9d6b"></i>Recibidas</span>'}</div>`}
 function pintarSol(L){
   const hoy=hoyL(),ch=x=>`<span class="chip ${x.procesado_at?'ok':x.visto_at?'vis':''}" style="padding:3px 10px;cursor:default">${x.bodega}${x.recibido_at?' 📬':''}</span>`;
   $('#db').innerHTML=vt()+(L.map(s=>{
-    const info=s.tipo=='informativa',b=DB.filter(x=>x.solicitud_id==s.id),n=b.length||1,ok=b.filter(x=>x.procesado_at),fa=b.filter(x=>!x.procesado_at),rc=ok.filter(x=>x.recibido_at),por=ok.length-rc.length,venc=s.plazo&&s.plazo<hoy&&fa.length;
-    return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h3 style="margin:0">${e(s.titulo)}</h3><div class="row" style="gap:6px;margin-top:6px"><span class="tag">${info?'Solo información':'Con llenado'}</span><span class="tag">${s.estado}</span>${s.plazo?`<span class="tag" style="${venc?'background:#fde8e6;color:#c0392b':''}">⏰ Plazo ${fd(s.plazo)}${venc?' · vencido':''}</span>`:''}${recojoTxt(s)?`<span class="tag" style="background:#e3f6ee;color:var(--ok)">📅 Recojo ${recojoTxt(s)}</span>`:''}</div></div>
+    const com=s.tipo=='comunicado',info=s.tipo=='informativa',b=DB.filter(x=>x.solicitud_id==s.id),n=b.length||1,ok=b.filter(x=>x.procesado_at),fa=b.filter(x=>!x.procesado_at),rc=ok.filter(x=>x.recibido_at),por=ok.length-rc.length,venc=s.plazo&&s.plazo<hoy&&fa.length;
+    return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h3 style="margin:0">${e(s.titulo)}</h3><div class="row" style="gap:6px;margin-top:6px"><span class="tag">${com?'📢 Comunicado':info?'Solo información':'Con llenado'}</span><span class="tag">${s.estado}</span>${s.plazo?`<span class="tag" style="${venc?'background:#fde8e6;color:#c0392b':''}">⏰ Plazo ${fd(s.plazo)}${venc?' · vencido':''}</span>`:''}${recojoTxt(s)?`<span class="tag" style="background:#e3f6ee;color:var(--ok)">📅 Recojo ${recojoTxt(s)}</span>`:''}</div></div>
     <div class="row"><button class="ghost" onclick="ver('${s.id}')">Seguimiento</button>${fa.length&&s.estado=='abierta'?`<button onclick="wa('${s.id}',1)">📲 Avisar (${fa.length})</button>`:''}</div></div>
-    <div class="sol-g"><div class="rgs">${ring(Math.round(ok.length/n*100),'#5046E5',info?'Procesado':'Registro',`${ok.length} de ${b.length}`)}${ring(Math.round(rc.length/n*100),'#1f9d6b','Recibido',`${rc.length} de ${b.length} · ${por} por recibir`)}${ring(Math.round(fa.length/n*100),'#f0b429','Faltan',`${fa.length} bodegas`)}</div>
-    <div><b style="font-size:14px">Respuestas por día</b>${grafica(dias(b))}</div></div>
-    <details><summary>Ver bodegas (${ok.length} completaron · ${fa.length} faltan)</summary><div class="g2" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:8px"><div><b style="color:var(--ok)">✅ ${info?'Ya procesaron':'Ya enviaron'}</b><div class="chips">${ok.map(ch).join('')||'<span class="mut">Nadie aún</span>'}</div></div><div><b style="color:#c0392b">⏳ Faltan</b><div class="chips">${fa.map(ch).join('')||'<span class="mut">Todas completaron 🎉</span>'}</div></div></div></details></div>`}).join('')||'<p class="mut">No hay solicitudes con este filtro.</p>');
+    <div class="sol-g"><div class="rgs">${ring(Math.round(ok.length/n*100),'#5046E5',com?'Enterados':info?'Procesado':'Registro',`${ok.length} de ${b.length}`)}${com?'':ring(Math.round(rc.length/n*100),'#1f9d6b','Recibido',`${rc.length} de ${b.length} · ${por} por recibir`)}${ring(Math.round(fa.length/n*100),'#f0b429','Faltan',`${fa.length} bodegas`)}</div>
+    <div><b style="font-size:14px">Respuestas por día</b>${grafica(dias(b),com)}</div></div>
+    <details><summary>Ver bodegas (${ok.length} completaron · ${fa.length} faltan)</summary><div class="g2" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:8px"><div><b style="color:var(--ok)">✅ ${com?'Ya se enteraron':info?'Ya procesaron':'Ya enviaron'}</b><div class="chips">${ok.map(ch).join('')||'<span class="mut">Nadie aún</span>'}</div></div><div><b style="color:#c0392b">⏳ Faltan</b><div class="chips">${fa.map(ch).join('')||'<span class="mut">Todas completaron 🎉</span>'}</div></div></div></details></div>`}).join('')||'<p class="mut">No hay solicitudes con este filtro.</p>');
 }
 function pintar(){
   const fs=$('#fs').value,ft=$('#ft').value,hoy=hoyL();
@@ -426,8 +445,8 @@ async function ver(id,f='all'){
 }
 async function rcb(id,b,v){await sb.from('solicitud_bodegas').update({recibido_at:v?new Date().toISOString():null}).eq('solicitud_id',id).eq('bodega',b).not('procesado_at','is',null);ver(id,SG.f)}
 function sg(f){
-  SG.f=f;const{id,s,b}=SG,info=s.tipo=='informativa',done=x=>!!x.procesado_at;
-  const stt=x=>x.recibido_at?'📬 Recibido':done(x)?(info?'✅ Procesado':x.sin_existencias?'✅ Enviado (sin existencias)':'✅ Enviado'):x.visto_at?'👁 Abierta, sin enviar':'⏳ Pendiente';
+  SG.f=f;const{id,s,b}=SG,com=s.tipo=='comunicado',info=s.tipo=='informativa'||com,done=x=>!!x.procesado_at;
+  const stt=x=>x.recibido_at?'📬 Recibido':done(x)?(info?(com?'✅ Enterado':'✅ Procesado'):x.sin_existencias?'✅ Enviado (sin existencias)':'✅ Enviado'):x.visto_at?'👁 Abierta, sin enviar':'⏳ Pendiente';
   const p=b.filter(done).length,falt=b.length-p,rc=b.filter(x=>x.recibido_at).length,t=x=>x?fh(x):'–';
   const L=b.filter(x=>f=='falt'?!done(x):f=='ok'?done(x):true).sort((x,y)=>done(x)-done(y)||x.bodega.localeCompare(y.bodega));
   const acc=x=>done(x)?((x.recibido_at?`<a style="cursor:pointer" onclick="rcb('${id}','${x.bodega}',0)">↺ quitar recibido</a>`:`<button style="padding:4px 10px" onclick="rcb('${id}','${x.bodega}',1)">📬 Recibido</button>`)+' ')+`<a style="cursor:pointer" onclick="reab('${id}','${x.bodega}',${info})">↺ reabrir</a>`:'';
@@ -435,16 +454,16 @@ function sg(f){
   <button class="ghost" onclick="dl('seguimiento.csv',[['bodega','estado','abierto','completado','respuesta','recibido'],...SG.b.map(x=>[x.bodega,stt(x),x.visto_at||'',x.procesado_at||'',x.respuesta||'',x.recibido_at||''])])">Exportar seguimiento</button>
   ${info?'':`<button class="ghost" onclick="dl('consolidado.csv',[COL,...R.map(x=>COL.map(c=>x[c]))])">Exportar datos (CSV)</button>`}
   ${falt&&s.estado=='abierta'?`<button onclick="wa('${id}',1)">📲 Avisar a los que faltan (${falt})</button>`:''}</div>
-  <h2>${e(s.titulo)} <span class="tag">${s.estado}</span> <span class="tag">${info?'Solo información':'Con llenado'}</span></h2>
-  <div class="kpis"><div class="kpi"><b>${b.length?Math.round(p/b.length*100):0}%</b><span>${p} de ${b.length} ${info?'procesaron':'enviaron'}</span></div><div class="kpi"><b style="color:${falt?'#c0392b':'inherit'}">${falt}</b><span>Faltan</span></div><div class="kpi"><b>${rc}</b><span>Recibidas por ti</span></div><div class="kpi"><b style="font-size:22px">${s.plazo?fd(s.plazo):'–'}</b><span>Plazo para procesar</span></div></div>
-  <div class="row"><select onchange="sg(this.value)"><option value="all" ${f=='all'?'selected':''}>Todas (${b.length})</option><option value="falt" ${f=='falt'?'selected':''}>Faltan (${falt})</option><option value="ok" ${f=='ok'?'selected':''}>${info?'Ya procesaron':'Ya enviaron'} (${p})</option></select></div>
+  <h2>${e(s.titulo)} <span class="tag">${s.estado}</span> <span class="tag">${com?'📢 Comunicado':info?'Solo información':'Con llenado'}</span></h2>
+  <div class="kpis"><div class="kpi"><b>${b.length?Math.round(p/b.length*100):0}%</b><span>${p} de ${b.length} ${com?'se enteraron':info?'procesaron':'enviaron'}</span></div><div class="kpi"><b style="color:${falt?'#c0392b':'inherit'}">${falt}</b><span>Faltan</span></div><div class="kpi"><b>${rc}</b><span>Recibidas por ti</span></div><div class="kpi"><b style="font-size:22px">${s.plazo?fd(s.plazo):'–'}</b><span>Plazo para procesar</span></div></div>
+  <div class="row"><select onchange="sg(this.value)"><option value="all" ${f=='all'?'selected':''}>Todas (${b.length})</option><option value="falt" ${f=='falt'?'selected':''}>Faltan (${falt})</option><option value="ok" ${f=='ok'?'selected':''}>${com?'Ya se enteraron':info?'Ya procesaron':'Ya enviaron'} (${p})</option></select></div>
   <div class="tw"><table style="min-width:720px"><thead><tr><th>BODEGA</th><th>ESTADO</th>${info?'<th>FECHA Y HORA</th><th>RESPUESTA</th><th>RECIBIDO</th>':'<th>ABIERTO</th><th>ENVIADO</th><th>RECIBIDO</th>'}<th></th></tr></thead>
   <tbody>${L.map(x=>`<tr><td style="padding:8px"><b>${x.bodega}</b></td><td>${stt(x)}</td>${info?`<td>${t(x.procesado_at)}</td><td>${e(x.respuesta||'–')}</td><td>${t(x.recibido_at)}</td>`:`<td>${t(x.visto_at)}</td><td>${t(x.procesado_at)}</td><td>${t(x.recibido_at)}</td>`}<td style="padding:6px">${acc(x)}</td></tr>`).join('')||'<tr><td colspan="6" style="padding:14px" class="mut">Sin bodegas en este filtro.</td></tr>'}</tbody></table></div>
   ${info?'':`<h3>Datos enviados · ${R.length} filas</h3><div class="tw"><table><thead><tr>${COL.map(c=>`<th>${c.replace('_',' ').toUpperCase()}</th>`).join('')}</tr></thead><tbody>${R.map(x=>`<tr>${COL.map(c=>`<td style="padding:8px">${e(x[c])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}`;
 }
 
 /* ---- Comunicados DEV ---- */
-const getCom=()=>{const c={asunto:$('#cm_asunto').value.trim(),regionales:$('#cm_reg').value.trim(),nota:$('#cm_nota').value.trim(),proveedores:$('#cm_prov').value.trim(),extras:$('#cm_ext').value.trim()};
+const getCom=()=>{const c={plantilla:'dev',asunto:$('#cm_asunto').value.trim(),regionales:$('#cm_reg').value.trim(),nota:$('#cm_nota').value.trim(),proveedores:$('#cm_prov').value.trim(),extras:$('#cm_ext').value.trim()};
   if($('#cm_pc')&&$('#cm_pc').checked){c.ciudades={};GR.forEach(g=>{const t=$('#cm_r_'+g).value.trim();if(t)c.ciudades[g]=t})}return c};
 const msgReg=(a,b)=>`Desde ${fd(a)} el sistema está habilitado para procesar traspasos para Devolución a Proveedor hasta el ${fd(b)}. Fuera del plazo establecido el sistema se bloqueará.`;
 function comuAutoC(g,q){const a=$('#cm_d1_'+g).value,b=$('#cm_d2_'+g).value;if(!a||!b)return q?0:alert('Elige las dos fechas de '+CIU[g]);$('#cm_r_'+g).value=msgReg(a,b);comuPrev()}
@@ -453,8 +472,12 @@ function comuCiudad(on){$('#cm_u').hidden=on;$('#cm_c').hidden=!on;
 const comuPrev=()=>{$('#cp').innerHTML=comuHTML(getCom())};
 function comuAuto(q){const a=$('#cm_d1').value,b=$('#cm_d2').value;if(!a||!b)return q?0:alert('Elige las dos fechas');
   $('#cm_reg').value=msgReg(a,b);comuPrev()}
-function comunicados(){act('com');
-  $('#m').innerHTML=`<h2>📢 Comunicados DEV</h2><p class="mut">Escribe solo los campos amarillos: salen resaltados y en MAYÚSCULAS. El resto del comunicado es fijo.</p>
+let CT_='dev';
+function comunicados(t){act('com');if(t)CT_=t;
+  $('#m').innerHTML=`<h2>📢 Comunicados DEV</h2><div class="sub-t"><button class="${CT_=='dev'?'':'ghost'}" onclick="comunicados('dev')">📄 Devoluciones</button><button class="${CT_=='baja'?'':'ghost'}" onclick="comunicados('baja')">🗑️ Bajas</button></div><div id="cf"></div><h3>Comunicados publicados · ${CT_=='dev'?'Devoluciones':'Bajas'}</h3><div id="cl"><p class="mut">Cargando…</p></div>`;
+  CT_=='dev'?comuFormDev():comuFormBaja();mk(1);comuLista();
+}
+function comuFormDev(){$('#cf').innerHTML=`<p class="mut">Escribe solo los campos amarillos: salen resaltados y en MAYÚSCULAS. El resto del comunicado es fijo.</p>
   <div class="com-g"><div class="card"><h3>Nuevo comunicado</h3>
   <label class="mut">Asunto resaltado · "Estas son las fechas para las…"</label><input id="cm_asunto" value="devoluciones del mes de diciembre" oninput="comuPrev()">
   <label class="sw"><input type="checkbox" id="cm_pc" onchange="comuCiudad(this.checked)"> Fechas y mensaje distintos por ciudad (La Paz, Oruro, Cobija)</label>
@@ -469,9 +492,25 @@ function comunicados(){act('com');
   <div class="chips">${BOD.map(b=>`<label class="chip"><input type="checkbox" value="${b}">${b}</label>`).join('')}</div>
   <button onclick="comuPublicar()">📢 Publicar comunicado</button></div>
   <div><h3 style="margin-top:0">Vista previa · así lo ven las bodegas</h3><p class="mut" style="margin:-4px 0 8px;font-size:13px">El saludo (buenos días, buenas tardes o buenas noches) cambia solo según la hora en que entre cada bodega, y cada una ve el mensaje de su ciudad.</p><div id="cp"></div></div></div>
-  <h3>Comunicados publicados</h3><div id="cl"><p class="mut">Cargando…</p></div>`;
-  mk(1);comuAuto(1);comuLista();
-}
+  `;comuAuto(1)}
+const getBaja=()=>({plantilla:'baja',mes:$('#cb_mes').value.trim(),desde:$('#cb_d1').value,hasta:$('#cb_d2').value,rotulo:$('#cb_rot').value.trim()});
+const bajaPrev=()=>{$('#cp').innerHTML=comuHTML(getBaja())};
+function bajaMes(){const r=$('#cb_rot');if(r.dataset.auto!='0')r.value=('BAJAS '+$('#cb_mes').value.trim()).trim().toUpperCase();bajaPrev()}
+function comuFormBaja(){$('#cf').innerHTML=`<p class="mut">Solo cambias el mes, las fechas de emisión y cómo deben rotular las cajas. El resto del comunicado es fijo.</p>
+  <div class="com-g"><div class="card"><h3>Nuevo comunicado de bajas</h3>
+  <label class="mut">Mes y año · "BAJAS correspondientes al mes de…"</label><input id="cb_mes" value="noviembre 2026" oninput="bajaMes()">
+  <div class="g2"><div><label class="mut">Emisión de traspasos: desde</label><input id="cb_d1" type="date" value="2026-11-16" oninput="bajaPrev()"></div><div><label class="mut">Hasta</label><input id="cb_d2" type="date" value="2026-11-18" oninput="bajaPrev()"></div></div>
+  <label class="mut">Cómo deben rotular las cajas (se arma solo con el mes; puedes editarlo)</label><input id="cb_rot" value="BAJAS NOVIEMBRE 2026" oninput="this.dataset.auto='0';bajaPrev()">
+  <h3>Bodegas destinatarias <button class="ghost" onclick="mk(1)">Todas</button> <button class="ghost" onclick="mk(0)">Ninguna</button></h3>
+  <div class="chips">${BOD.map(b=>`<label class="chip"><input type="checkbox" value="${b}">${b}</label>`).join('')}</div>
+  <button onclick="bajaPublicar()">📢 Publicar comunicado de bajas</button></div>
+  <div><h3 style="margin-top:0">Vista previa · así lo ven las bodegas</h3><p class="mut" style="margin:-4px 0 8px;font-size:13px">El saludo (buenos días, buenas tardes o buenas noches) cambia solo según la hora en que entre cada bodega.</p><div id="cp"></div></div></div>`;bajaPrev()}
+async function bajaPublicar(){const c=getBaja(),bs=[...document.querySelectorAll('.chips input:checked')].map(i=>i.value);
+  if(!c.mes||!c.desde||!c.hasta||!c.rotulo)return alert('Completa el mes, las fechas y el rótulo');if(c.hasta<c.desde)return alert('La fecha "hasta" no puede ser antes de "desde"');if(!bs.length)return alert('Elige al menos una bodega');
+  if(!confirm(`¿Publicar el comunicado de bajas para ${bs.length} bodega(s)?`))return;
+  const{data,error}=await sb.from('solicitudes').insert({tipo:'comunicado',titulo:'COMUNICADO: BAJAS '+c.mes.toUpperCase(),contenido:c}).select().single();
+  if(error)return alert(error.message+'\n¿Ya ejecutaste migracion_11_comunicados.sql?');
+  const r=await sb.from('solicitud_bodegas').insert(bs.map(b=>({solicitud_id:data.id,bodega:b})));r.error?alert(r.error.message):comunicados()}
 async function comuPublicar(){const c=getCom(),bs=[...document.querySelectorAll('.chips input:checked')].map(i=>i.value);
   if(!c.asunto)return alert('Completa el asunto');
   if(c.ciudades){const f=[...new Set(bs.map(gOf))].filter(g=>!c.ciudades[g]);if(f.length)return alert('Falta el mensaje de: '+f.map(g=>CIU[g]||g).join(', '))}else if(!c.regionales)return alert('Completa el mensaje para Regionales');
@@ -482,7 +521,7 @@ async function comuPublicar(){const c=getCom(),bs=[...document.querySelectorAll(
   const r=await sb.from('solicitud_bodegas').insert(bs.map(b=>({solicitud_id:data.id,bodega:b})));r.error?alert(r.error.message):comunicados()}
 async function comuLista(){
   const[a,b]=await Promise.all([sb.from('solicitudes').select('*').eq('tipo','comunicado').order('created_at',{ascending:false}),sb.from('solicitud_bodegas').select('*').limit(10000)]);
-  $('#cl').innerHTML=(a.data||[]).map(s=>{const x=b.data.filter(y=>y.solicitud_id==s.id),ok=x.filter(y=>y.procesado_at),fa=x.filter(y=>!y.procesado_at),pc=x.length?Math.round(ok.length/x.length*100):0,chp=(y,c)=>`<span class="chip ${c}" style="padding:3px 10px;cursor:default" title="${y.procesado_at?fh(y.procesado_at):'Pendiente'}">${y.bodega}</span>`;
+  $('#cl').innerHTML=(a.data||[]).filter(s=>((s.contenido||{}).plantilla||'dev')==CT_).map(s=>{const x=b.data.filter(y=>y.solicitud_id==s.id),ok=x.filter(y=>y.procesado_at),fa=x.filter(y=>!y.procesado_at),pc=x.length?Math.round(ok.length/x.length*100):0,chp=(y,c)=>`<span class="chip ${c}" style="padding:3px 10px;cursor:default" title="${y.procesado_at?fh(y.procesado_at):'Pendiente'}">${y.bodega}</span>`;
     return `<div class="card"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${e(s.titulo)} <span class="tag">${s.estado}</span></h3><div class="row">${fa.length&&s.estado=='abierta'?`<button onclick="wa('${s.id}',1)">📲 Avisar (${fa.length})</button>`:''}${s.estado=='abierta'?`<button class="ghost" onclick="comuCerrar('${s.id}')">Cerrar</button>`:''}<button class="ghost" onclick="comuDel('${s.id}')">Eliminar</button></div></div>
     <p class="mut" style="margin:6px 0">Publicado ${fh(s.created_at)}</p><div class="row"><div class="sb" style="flex:1"><i class="p" style="width:${pc}%"></i></div><b>${pc}%</b><span class="mut">${ok.length} de ${x.length} enterados</span></div>
     <div class="chips">${ok.map(y=>chp(y,'ok')).join('')}${fa.map(y=>chp(y,'')).join('')}</div><details><summary>Ver comunicado</summary>${comuHTML(s.contenido)}</details></div>`}).join('')||'<p class="mut">Aún no hay comunicados publicados.</p>';
